@@ -1,12 +1,14 @@
 package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
+import com.gabrielbl.healthaplication.exception.BusinessException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalIniciarDTO;
 import com.gabrielbl.healthaplication.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,11 +31,11 @@ public class AvaliacaoMensalService {
     @Autowired
     private AvaliacaoSetorRepository avaliacaoSetorRepository;
 
-    public void criarEIniciarAvaliacaoMensal(AvaliacaoMensalIniciarDTO data,String emailUsuario) {
+    public void criarEIniciarAvaliacaoMensal(AvaliacaoMensalIniciarDTO data) {
 
 
-        Usuario usuario = usuarioRepository.findByLogin(emailUsuario);
-        Empresa empresa = usuario.getEmpresa();
+
+        Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
 
         if((avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(
                 data.competencia(), empresa.getId(),true)!=null)){
@@ -68,13 +70,30 @@ public class AvaliacaoMensalService {
     }
 
 
-    public void finalizarAvaliacaoMensal(String competencia,String emailUsuario) {
-
-        if((avaliacaoMensalRepository.findByCompetenciaAndIsActive(competencia,false)!=null)){
+    public void finalizarAvaliacaoMensal(AvaliacaoMensalIniciarDTO data) {
 
 
-        }
+        Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
+        if(empresa ==null) throw new NotFoundException("Empresa nao encontrada");
 
+        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(data.competencia(), empresa.getId(),true   );
+        if(avaliacaoMensal.getIsActive()==false) throw new NotFoundException("Avaliacao Mensal ativa nao existente");
+
+        avaliacaoMensal.setIsActive(false);
+
+
+
+
+    }
+
+    public void deletarAvaliacaoMensal(AvaliacaoMensalIniciarDTO data) {
+
+        Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
+        if(empresa ==null) throw new NotFoundException("Empresa nao encontrada");
+
+        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByCompetenciaAndEmpresaId(data.competencia(), empresa.getId());
+        if(avaliacaoMensal ==null) throw new NotFoundException("Avaliacao Mensal nao encontrada");
+        avaliacaoMensalRepository.delete(avaliacaoMensal);
 
     }
 

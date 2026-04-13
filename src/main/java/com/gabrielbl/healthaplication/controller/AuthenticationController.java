@@ -103,7 +103,7 @@ public class AuthenticationController {
 
 
 
-        // 2. Dispara o e-mail
+        //Dispara o e-mail
         try {
 
             String linkSistema = "http://localhost:5173/completar-cadastro?email=" + java.net.URLEncoder.encode(emailFuncionario, "UTF-8");

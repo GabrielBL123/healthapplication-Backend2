@@ -54,4 +54,11 @@ public class RegistrarEmpresaController {
 
 
     }
+    @PostMapping("/setor/deletar")
+    public ResponseEntity<String> deletarSetor(@RequestBody @Validated RegisterSetorDTO data, Authentication authentication){
+
+        setorService.deletarSetor(data);
+
+        return ResponseEntity.ok().build();
+    }
 }

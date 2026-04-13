@@ -11,7 +11,7 @@ import java.util.UUID;
 public interface AvaliacaoMensalRepository extends JpaRepository<AvaliacaoMensal, UUID>{
 
 
-    AvaliacaoMensal findByCompetenciaAndIsActive(String competencia, boolean isActive);
+    AvaliacaoMensal findByCompetenciaAndEmpresaId(String  competencia,UUID empresaId);
 
     AvaliacaoMensal findByCompetencia(String competencia);
 

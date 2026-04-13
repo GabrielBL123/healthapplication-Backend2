@@ -22,30 +22,31 @@ public class AvaliacaoMensalController {
      */
 
     @PostMapping("/iniciar")
-    public ResponseEntity<String> iniciarAvaliacaoMensal(@RequestBody AvaliacaoMensalIniciarDTO data, Authentication authentication) {
+    public ResponseEntity<String> iniciarAvaliacaoMensal(@RequestBody AvaliacaoMensalIniciarDTO data) {
 
 
-        avaliacaoService.criarEIniciarAvaliacaoMensal(data, authentication.getName());
+        avaliacaoService.criarEIniciarAvaliacaoMensal(data);
 
         return ResponseEntity.ok("Avaliacao Mensal de "+ data.competencia() +" criada e iniciada");
     }
 
 
     @PostMapping("/finalizar")
-    public ResponseEntity<?> finalizarAvaliacaoMensal(@RequestBody String competencia,Authentication authentication){
+    public ResponseEntity<?> finalizarAvaliacaoMensal(@RequestBody AvaliacaoMensalIniciarDTO data) {
 
-        avaliacaoService.finalizarAvaliacaoMensal(competencia,authentication.getName());
+        avaliacaoService.finalizarAvaliacaoMensal(data);
 
 
-        return ResponseEntity.ok("Avaliacao Mensal de "+ competencia +" finalizada com sucesso");
+
+        return ResponseEntity.ok("Avaliacao Mensal de "+ data.competencia() +" finalizada com sucesso");
     }
 
     @PostMapping("/deletar")
-    public ResponseEntity<?> deletarAvaliacaoMensal(@RequestBody String competencia,Authentication authentication){
+    public ResponseEntity<?> deletarAvaliacaoMensal(@RequestBody AvaliacaoMensalIniciarDTO data){
 
-        //avaliacaoService.deletarAvaliacaoMensal(competencia,authentication.getName());
+        avaliacaoService.deletarAvaliacaoMensal(data);
 
-        return ResponseEntity.ok("Teste");
+        return ResponseEntity.ok("Avaliacao Mensal deletada com sucesso");
     }
 
 

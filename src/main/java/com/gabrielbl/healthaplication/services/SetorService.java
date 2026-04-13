@@ -46,4 +46,11 @@ public class SetorService {
         setor.setEmpresa(empresa);
         setorRepository.save(setor);
     }
+
+
+    public void deletarSetor(RegisterSetorDTO data) {
+        Setor setor = setorRepository.findByNomeAndEmpresaCnpj(data.setor(), data.cnpj());
+        setorRepository.delete(setor);
+
+    }
 }

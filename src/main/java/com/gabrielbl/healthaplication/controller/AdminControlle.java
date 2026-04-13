@@ -2,6 +2,7 @@ package com.gabrielbl.healthaplication.controller;
 
 
 import com.gabrielbl.healthaplication.model.DTOs.RegisterDTO;
+import com.gabrielbl.healthaplication.model.DTOs.RegisterRhDTO;
 import com.gabrielbl.healthaplication.model.Usuario;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import com.gabrielbl.healthaplication.services.AdminService;
@@ -23,6 +24,16 @@ public class AdminControlle {
 
     public record VincularRHRequest(String cnpj, String login) {}
 
+
+    @PostMapping("/criar_rh_empresa")
+    ResponseEntity<?> criarRHEmpresa(@RequestBody @Validated RegisterRhDTO data) {
+
+        adminService.criarEVincularRhParaEmpresa(data);
+
+        return ResponseEntity.ok("Rh e Empresa Criada com sucesso");
+
+    }
+    /*
     @PostMapping("/registrar_rh")
     ResponseEntity<?> criarRH(@RequestBody @Validated RegisterDTO data) {
 
@@ -41,6 +52,8 @@ public class AdminControlle {
 
         return ResponseEntity.notFound().build();
     }
+
+     */
 
 
 

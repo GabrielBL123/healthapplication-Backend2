@@ -7,8 +7,8 @@ public enum UsuarioFuncao {
 
     ADMIN("admin"),
     USER("user"),
-    RH("rh"),
-    OWNER("owner");
+    RH("rh");
+
 
     private final String role;
 

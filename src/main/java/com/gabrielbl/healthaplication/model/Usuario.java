@@ -27,7 +27,7 @@ public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    @Column(nullable = false)
+    @Column
     private String login;
 
     @Column(nullable = false)
@@ -88,10 +88,7 @@ public class Usuario implements UserDetails {
             case USER -> List.of(
                     new SimpleGrantedAuthority("ROLE_USER")
             );
-            case OWNER -> List.of(
-                    new SimpleGrantedAuthority("ROLE_USER"),
-                    new SimpleGrantedAuthority("ROLE_OWNER")
-            );
+
         };
     }
 

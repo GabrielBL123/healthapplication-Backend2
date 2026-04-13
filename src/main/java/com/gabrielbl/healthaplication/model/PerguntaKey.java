@@ -6,6 +6,9 @@ import lombok.Getter;
 @Getter
 public enum PerguntaKey {
 
+    /*
+
+
     F1_P1(1,1),//A quantidade de trabalho é excessiva para o tempo disponível.
     F1_P2(1,2),//Costumo acumular funções além da minha responsabilidade.
     F2_P1(2,1),//Trabalho sob pressão constante por prazos.
@@ -34,6 +37,10 @@ public enum PerguntaKey {
     F13_P2(13,2),//Sinto esgotamento emocional.
     F13_P3(13,3);//Já pensei em me afastar do trabalho por motivos emocionais
 
+
+     */
+
+    F1_P1(1,1);
     private final short factor;
     private final short numero;
 
@@ -45,4 +52,72 @@ public enum PerguntaKey {
 
 
     public String key() { return name(); } // "F1_P1"
+
+    /*
+
+Tenho mais tarefas do que consigo realizar
+Frequentemente me sinto sobrecarregado no trabalho
+As demandas são compatíveis com o tempo disponível
+Existe controle ou acompanhamento do excesso de trabalho
+
+Preciso trabalhar em ritmo acelerado constantemente
+Me sinto pressionado por prazos ou produtividade
+O ritmo de trabalho permite pausas adequadas
+As metas são realistas e alcançáveis
+
+Minha liderança me trata com respeito
+Sinto apoio da minha liderança
+Existem critérios claros de cobrança e gestão
+A liderança recebe preparo para gestão de pessoas
+
+Já me senti desrespeitado ou constrangido no trabalho
+Existe um clima de medo ou tensão no ambiente
+Existe um canal seguro para denúncias
+Há políticas claras contra assédio
+
+Tenho pouca liberdade para organizar meu trabalho
+Sinto que não tenho controle sobre minhas tarefas
+Existe autonomia para tomada de decisão dentro da função
+As responsabilidades estão claramente definidas
+
+Sinto que meu trabalho não é valorizado
+Meu esforço raramente é reconhecido
+Existem práticas de reconhecimento na empresa
+Há critérios claros para crescimento e valorização
+
+Recebo informações confusas ou incompletas
+Tenho dificuldade de entender o que é esperado de mim
+Existem canais formais de comunicação
+As orientações de trabalho são claras e registradas
+
+Sinto que há tratamento desigual na empresa
+Percebo favoritismo ou injustiça
+Existem critérios claros para decisões internas
+As regras são aplicadas de forma igual
+
+Existem conflitos frequentes entre colegas
+O ambiente de trabalho é tenso
+Existem ações para mediação de conflitos
+Há regras de convivência bem definidas
+
+Trabalho além do meu horário com frequência
+Sinto dificuldade de descansar
+A jornada é controlada adequadamente
+Os intervalos são respeitados
+
+O trabalho interfere na minha vida pessoal
+Tenho dificuldade de me desconectar do trabalho
+A empresa respeita horários fora do expediente
+Existe equilíbrio entre trabalho e vida pessoal
+
+Meu trabalho me causa desgaste emocional
+Sinto cansaço mental frequente
+Existe apoio emocional ou psicológico
+Há ações de cuidado com a saúde mental
+
+Sinto falta de apoio para realizar meu trabalho
+Me sinto desamparado em situações difíceis
+Existe suporte da empresa quando necessário
+Há orientação e acompanhamento das atividades
+     */
 }
