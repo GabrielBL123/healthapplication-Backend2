@@ -1,41 +1,36 @@
 package com.gabrielbl.healthaplication.controller;
 
 
-import com.gabrielbl.healthaplication.model.DTOs.RegisterDTO;
-import com.gabrielbl.healthaplication.model.DTOs.RegisterRhDTO;
-import com.gabrielbl.healthaplication.model.Usuario;
-import com.gabrielbl.healthaplication.repository.UsuarioRepository;
+import com.gabrielbl.healthaplication.model.DTOs.RegistrarRhDTO;
+import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin")
-public class AdminControlle {
+public class AdminController {
 
 
 
     @Autowired
     private AdminService adminService;
 
-    public record VincularRHRequest(String cnpj, String login) {}
 
 
-    @PostMapping("/criar_rh_empresa")
-    ResponseEntity<?> criarRHEmpresa(@RequestBody @Validated RegisterRhDTO data) {
+    @PostMapping("/criar-rh-empresa")
+    ResponseEntity<ResponseDTO<?>> criarRHEmpresa(@RequestBody @Validated RegistrarRhDTO data) {
 
         adminService.criarEVincularRhParaEmpresa(data);
 
-        return ResponseEntity.ok("Rh e Empresa Criada com sucesso");
+        return ResponseEntity.ok(new ResponseDTO<>("Rh criado com sucesso", null));
 
     }
     /*
     @PostMapping("/registrar_rh")
-    ResponseEntity<?> criarRH(@RequestBody @Validated RegisterDTO data) {
+    ResponseEntity<?> criarRH(@RequestBody @Validated RegistrarDTO data) {
 
         adminService.criarRh(data);
 

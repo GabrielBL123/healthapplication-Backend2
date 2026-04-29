@@ -1,16 +1,15 @@
 package com.gabrielbl.healthaplication.controller;
 
 
-import com.gabrielbl.healthaplication.model.AvaliacaoMensal;
-import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalIniciarDTO;
+import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalDTO;
+import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.services.AvaliacaoMensalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/avaliacao_mensal")
+@RequestMapping("/avaliacoes-mensais")
 public class AvaliacaoMensalController {
 
     @Autowired
@@ -21,32 +20,36 @@ public class AvaliacaoMensalController {
      * Criar questionario
      */
 
+
+
+
+
     @PostMapping("/iniciar")
-    public ResponseEntity<String> iniciarAvaliacaoMensal(@RequestBody AvaliacaoMensalIniciarDTO data) {
+    public ResponseEntity<ResponseDTO<?>> iniciarAvaliacaoMensal(@RequestBody AvaliacaoMensalDTO data) {
 
 
         avaliacaoService.criarEIniciarAvaliacaoMensal(data);
 
-        return ResponseEntity.ok("Avaliacao Mensal de "+ data.competencia() +" criada e iniciada");
+        return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal de "+ data.competencia() +" criada e iniciada",null));
     }
 
 
     @PostMapping("/finalizar")
-    public ResponseEntity<?> finalizarAvaliacaoMensal(@RequestBody AvaliacaoMensalIniciarDTO data) {
+    public ResponseEntity<ResponseDTO<?>> finalizarAvaliacaoMensal(@RequestBody AvaliacaoMensalDTO data) {
 
         avaliacaoService.finalizarAvaliacaoMensal(data);
 
 
 
-        return ResponseEntity.ok("Avaliacao Mensal de "+ data.competencia() +" finalizada com sucesso");
+        return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal de "+ data.competencia() +" finalizada com sucesso",null));
     }
 
     @PostMapping("/deletar")
-    public ResponseEntity<?> deletarAvaliacaoMensal(@RequestBody AvaliacaoMensalIniciarDTO data){
+    public ResponseEntity<ResponseDTO<?>> deletarAvaliacaoMensal(@RequestBody AvaliacaoMensalDTO data){
 
         avaliacaoService.deletarAvaliacaoMensal(data);
 
-        return ResponseEntity.ok("Avaliacao Mensal deletada com sucesso");
+        return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal deletada com sucesso",null));
     }
 
 

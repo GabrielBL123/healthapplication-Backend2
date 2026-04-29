@@ -1,21 +1,15 @@
 package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
-import com.gabrielbl.healthaplication.model.DTOs.RegisterRhDTO;
+import com.gabrielbl.healthaplication.model.DTOs.RegistrarRhDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Usuario;
-import com.gabrielbl.healthaplication.model.UsuarioFuncao;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
 
 
 @Service
@@ -46,7 +40,7 @@ public class AdminService {
         usuarioRepository.save(usuario);
     }
 
-    public void criarRh(RegisterDTO data){
+    public void criarRh(RegistrarDTO data){
 
         if(usuarioRepository.findByLogin(data.login()) != null)
             throw new AlreadySubmittedException("Usuário ja cadastrado");
@@ -62,7 +56,7 @@ public class AdminService {
 
  */
     @Transactional
-    public void criarEVincularRhParaEmpresa(RegisterRhDTO data){
+    public void criarEVincularRhParaEmpresa(RegistrarRhDTO data){
 
         if(usuarioRepository.findByLogin(data.login()) != null)
             throw new AlreadySubmittedException("Usuário ja cadastrado");

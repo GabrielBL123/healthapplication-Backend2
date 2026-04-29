@@ -1,14 +1,12 @@
 package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
-import com.gabrielbl.healthaplication.exception.BusinessException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.*;
-import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalIniciarDTO;
+import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalDTO;
 import com.gabrielbl.healthaplication.repository.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,7 +29,7 @@ public class AvaliacaoMensalService {
     @Autowired
     private AvaliacaoSetorRepository avaliacaoSetorRepository;
 
-    public void criarEIniciarAvaliacaoMensal(AvaliacaoMensalIniciarDTO data) {
+    public void criarEIniciarAvaliacaoMensal(AvaliacaoMensalDTO data) {
 
 
 
@@ -70,7 +68,7 @@ public class AvaliacaoMensalService {
     }
 
 
-    public void finalizarAvaliacaoMensal(AvaliacaoMensalIniciarDTO data) {
+    public void finalizarAvaliacaoMensal(AvaliacaoMensalDTO data) {
 
 
         Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
@@ -86,7 +84,7 @@ public class AvaliacaoMensalService {
 
     }
 
-    public void deletarAvaliacaoMensal(AvaliacaoMensalIniciarDTO data) {
+    public void deletarAvaliacaoMensal(AvaliacaoMensalDTO data) {
 
         Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
         if(empresa ==null) throw new NotFoundException("Empresa nao encontrada");

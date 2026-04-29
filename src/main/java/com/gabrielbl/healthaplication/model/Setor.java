@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(uniqueConstraints = {
-        @UniqueConstraint(name="uk_setor_empresa_nome", columnNames={"empresa_id","nome"})
-})
+@Table(name = "setor")
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
