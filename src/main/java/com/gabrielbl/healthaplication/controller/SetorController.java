@@ -17,7 +17,7 @@ import java.util.UUID;
 
 
 @RestController
-@RequestMapping("/setor")
+@RequestMapping("/setores")
 public class SetorController {
 
     @Autowired
@@ -34,7 +34,7 @@ public class SetorController {
 
         List<Setor> setores=setorService.getAllEmpresaSetores(cnpj);
 
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Setores encontrados", null));
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Setores encontrados", setores));
 
 
     }

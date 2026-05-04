@@ -28,27 +28,6 @@ public class AdminController {
         return ResponseEntity.ok(new ResponseDTO<>("Rh criado com sucesso", null));
 
     }
-    /*
-    @PostMapping("/registrar_rh")
-    ResponseEntity<?> criarRH(@RequestBody @Validated RegistrarDTO data) {
-
-        adminService.criarRh(data);
-
-
-
-        return ResponseEntity.ok().build();
-
-    }
-
-    @PostMapping("/vincular_rh_a_empresa/")
-    ResponseEntity<?> vincularRH(@RequestBody @Validated VincularRHRequest requestRH) {
-
-        adminService.vincularRhParaEmpresa(requestRH.cnpj, requestRH.login);
-
-        return ResponseEntity.notFound().build();
-    }
-
-     */
 
 
 

@@ -46,7 +46,7 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.GET, "/HelloWorld").hasRole("ADMIN")
 
                         .requestMatchers(HttpMethod.POST, "/registrar/empresa").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/registrar/setor").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/registrar/setores").permitAll()
                         .requestMatchers(HttpMethod.GET, "/empresa").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")

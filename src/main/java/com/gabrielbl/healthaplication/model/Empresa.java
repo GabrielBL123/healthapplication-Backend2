@@ -1,14 +1,11 @@
 package com.gabrielbl.healthaplication.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 @Entity(name="empresa")
@@ -36,9 +33,12 @@ public class Empresa {
     @Column
     private String telefone;
 
+    @OneToMany(mappedBy = "empresa", cascade = CascadeType.ALL)
+    private List<AvaliacaoMensal> avaliacoes;
+
     @OneToMany(mappedBy = "empresa",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<Setor> setor;
+    private List<Setor> setores;
 
 
 

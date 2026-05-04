@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 public record RegistrarDTO(String nome, String login, String password, UsuarioFuncao role,
                            String empresaCnpj,
-                           String cargo, //String setor,
+                           String cargo, //String setores,
                            LocalDateTime tempoDeTrabalho,
                            Duration jornada) {
 }

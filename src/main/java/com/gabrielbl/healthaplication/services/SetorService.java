@@ -10,7 +10,6 @@ import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.SetorRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -81,6 +80,6 @@ public class SetorService {
 
         Empresa empresa = empresaRepository.findByCnpj(cnpj);
 
-        return empresa.getSetor();
+        return empresa.getSetores();
     }
 }

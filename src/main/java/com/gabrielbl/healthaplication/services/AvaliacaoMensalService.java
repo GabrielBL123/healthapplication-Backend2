@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -50,7 +51,7 @@ public class AvaliacaoMensalService {
 
 
         List<AvaliacaoSetor> setores = new ArrayList<>();
-        for (Setor Setor : empresa.getSetor()){
+        for (Setor Setor : empresa.getSetores()){
             AvaliacaoSetor avaliacaoSetor = new AvaliacaoSetor();
             avaliacaoSetor.setSetor(Setor);
             avaliacaoSetor.setAvaliacaoMensal(avaliacaoMensal);
@@ -96,5 +97,16 @@ public class AvaliacaoMensalService {
     }
 
 
+    public List<AvaliacaoMensal> getAll() {
 
+        return avaliacaoMensalRepository.findAll();
+    }
+
+    public List<AvaliacaoMensal> getEmpresaAvaliacoes(UUID empresaId) {
+
+        Empresa empresa = empresaRepository.findById(empresaId).orElseThrow(()
+                -> new NotFoundException("Empresa nao encontrada"));
+
+        return empresa.getAvaliacoes();
+    }
 }

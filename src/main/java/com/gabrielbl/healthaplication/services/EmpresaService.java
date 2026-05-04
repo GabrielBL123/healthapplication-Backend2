@@ -5,15 +5,17 @@ import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
+import com.gabrielbl.healthaplication.model.AvaliacaoLink;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
+import com.gabrielbl.healthaplication.repository.AvaliacaoLinkRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -25,6 +27,9 @@ public class EmpresaService {
 
     @Autowired
     private EmpresaRepository empresaRepository;
+
+    @Autowired
+    private AvaliacaoLinkRepository avaliacaoLinkRepository;
 
     public void criarEmpresa(RegistrarEmpresaDTO data) {
 
@@ -62,5 +67,38 @@ public class EmpresaService {
 
     public List<Empresa> getAllEmpresas() {
         return empresaRepository.findAll();
+    }
+
+    public String gerarLinkAvaliacao(UUID empresaId, Integer horasExpiracao) {
+        Empresa empresa = empresaRepository.findById(empresaId)
+                .orElseThrow(() -> new EntityNotFoundException("Empresa nao encontrada"));
+
+        // Generate a unique link token
+        String linkToken = UUID.randomUUID().toString();
+
+        // Calculate expiry time (optional)
+        LocalDateTime expiracaoEm = horasExpiracao != null
+                ? LocalDateTime.now().plusHours(horasExpiracao)
+                : null;
+
+        // Save the link information in the database
+        AvaliacaoLink avaliacaoLink = new AvaliacaoLink();
+        avaliacaoLink.setEmpresaId(empresaId);
+        avaliacaoLink.setLinkToken(linkToken);
+        avaliacaoLink.setExpiraEm(expiracaoEm);
+        avaliacaoLinkRepository.save(avaliacaoLink);
+
+        // Return the generated link
+        return "https://cuidarmais.com/avaliacao/" + linkToken;
+
+
+
+    }
+
+
+    public Empresa getEmpresa(UUID id) {
+
+        return empresaRepository.findById(id).orElseThrow(()
+                -> new NotFoundException("Empresa nao encontrada"));
     }
 }

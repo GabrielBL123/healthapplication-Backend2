@@ -57,7 +57,7 @@ public class Usuario implements UserDetails {
 
 
     public Usuario(String login, String nome, String password, UsuarioFuncao role,
-                   Empresa empresa, String cargo, //String setor,
+                   Empresa empresa, String cargo, //String setores,
                    LocalDateTime tempoDeTrabalho, Duration jornada) {
 
         this.login = login;
@@ -66,7 +66,7 @@ public class Usuario implements UserDetails {
         this.role = role;
         this.empresa = empresa;
         this.cargo = cargo;
-        //this.setor = setor;
+        //this.setores = setores;
         this.tempoDeTrabalho = tempoDeTrabalho;
         this.jornada = jornada;
 

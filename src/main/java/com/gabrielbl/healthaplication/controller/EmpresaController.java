@@ -5,15 +5,11 @@ import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
-import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.services.EmpresaService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,10 +26,23 @@ public class EmpresaController {
 
 
     @GetMapping
-    public ResponseEntity<ResponseDTO<List<Empresa>>> getEmpresas(Authentication authentication) {
+    public ResponseEntity<ResponseDTO<List<Empresa>>> getAllEmpresas() {
         List<Empresa> empresas = empresaService.getAllEmpresas();
+
         return ResponseEntity.ok(new ResponseDTO<>("Empresas encontradas", empresas));
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseDTO<Empresa>> getEmpresasById(@PathVariable UUID id) {
+        Empresa empresa = empresaService.getEmpresa(id);
+
+        return ResponseEntity.ok(new ResponseDTO<>("Empresas encontradas", empresa));
+    }
+
+
+
+
+
 
 
     @PostMapping("/criar")
@@ -68,6 +77,12 @@ public class EmpresaController {
         catch (EntityNotFoundException ex) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseDTO<>(ex.getMessage(), null));
         }
+    }
+
+    @PostMapping("/{id}/gerar-avaliacao-link")
+    public ResponseEntity<?> gerarAvaliacaoLink(@PathVariable UUID empresaId, @Validated @RequestParam Integer horasExpiracao) {
+        String link = empresaService.gerarLinkAvaliacao(empresaId, horasExpiracao);
+        return ResponseEntity.ok(new ResponseDTO<>("Link gerado com sucesso", link));
     }
 
 }
