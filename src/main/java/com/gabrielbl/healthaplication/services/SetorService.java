@@ -3,6 +3,7 @@ package com.gabrielbl.healthaplication.services;
 import com.gabrielbl.healthaplication.exception.BusinessException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarSetorDTO;
+import com.gabrielbl.healthaplication.model.DTOs.SetorResponseDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Setor;
 import com.gabrielbl.healthaplication.model.Usuario;
@@ -10,7 +11,6 @@ import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.SetorRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -73,14 +73,28 @@ public class SetorService {
         setorRepository.save(setor);
     }
 
-    public List<Setor> getAllSetores() {
-          return setorRepository.findAll();
+    public List<SetorResponseDTO> getAllSetores() {
+          return setorRepository.findAll().stream()
+                  .map(this::toDTO)
+                  .toList();
     }
 
-    public List<Setor> getAllEmpresaSetores(String cnpj) {
+    public List<SetorResponseDTO> getAllEmpresaSetores(String cnpj) {
 
         Empresa empresa = empresaRepository.findByCnpj(cnpj);
 
-        return empresa.getSetor();
+        return empresa.getSetor().stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    private SetorResponseDTO toDTO(Setor setor) {
+        Empresa empresa = setor.getEmpresa();
+        return new SetorResponseDTO(
+                setor.getId(),
+                setor.getNome(),
+                empresa != null ? empresa.getId() : null,
+                empresa != null ? empresa.getNome() : null
+        );
     }
 }

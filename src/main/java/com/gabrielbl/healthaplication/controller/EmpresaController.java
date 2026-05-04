@@ -2,21 +2,17 @@ package com.gabrielbl.healthaplication.controller;
 
 import com.gabrielbl.healthaplication.exception.DuplicateEntityException;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
+import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
-import com.gabrielbl.healthaplication.model.Empresa;
-import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.services.EmpresaService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 
 import java.util.List;
 import java.util.UUID;
@@ -30,8 +26,8 @@ public class EmpresaController {
 
 
     @GetMapping
-    public ResponseEntity<ResponseDTO<List<Empresa>>> getEmpresas(Authentication authentication) {
-        List<Empresa> empresas = empresaService.getAllEmpresas();
+    public ResponseEntity<ResponseDTO<List<EmpresaResponseDTO>>> getEmpresas(Authentication authentication) {
+        List<EmpresaResponseDTO> empresas = empresaService.getAllEmpresas();
         return ResponseEntity.ok(new ResponseDTO<>("Empresas encontradas", empresas));
     }
 

@@ -11,6 +11,7 @@ import com.gabrielbl.healthaplication.repository.SetorRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +31,9 @@ public class UserService {
 
     @Autowired
     private SetorRepository setorRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * Get all users (converts to DTO to hide sensitive data)
@@ -93,7 +97,23 @@ public class UserService {
             throw new NotFoundException("Usuario nao encontrado");
         }
 
-        return  convertToDTO(usuario);
+        return convertToDTO(usuario);
 
+    }
+
+    public UserResponseDTO createUser(Usuario usuario) {
+        Usuario saved = usuarioRepository.save(usuario);
+        return convertToDTO(saved);
+    }
+
+    public Optional<UserResponseDTO> updateUser(String id, Usuario userDetails) {
+        return usuarioRepository.findById(id).map(user -> {
+            user.setLogin(userDetails.getLogin());
+            if (userDetails.getPassword() != null && !userDetails.getPassword().isBlank()) {
+                user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+            }
+            user.setRole(userDetails.getRole());
+            return convertToDTO(usuarioRepository.save(user));
+        });
     }
 }
