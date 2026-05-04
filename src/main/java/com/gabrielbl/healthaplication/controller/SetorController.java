@@ -3,7 +3,7 @@ package com.gabrielbl.healthaplication.controller;
 import com.gabrielbl.healthaplication.exception.DuplicateEntityException;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarSetorDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
-import com.gabrielbl.healthaplication.model.Setor;
+import com.gabrielbl.healthaplication.model.DTOs.SetorResponseDTO;
 import com.gabrielbl.healthaplication.services.SetorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,7 +13,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 
 @RestController
@@ -25,18 +24,15 @@ public class SetorController {
 
 
     @GetMapping
-    public ResponseEntity<ResponseDTO<?>> getAllSetores() {
-        return ResponseEntity.ok(new ResponseDTO<>("Todos os setores retornados",setorService.getAllSetores()));
+    public ResponseEntity<ResponseDTO<List<SetorResponseDTO>>> getAllSetores() {
+        return ResponseEntity.ok(new ResponseDTO<>("Todos os setores retornados", setorService.getAllSetores()));
     }
+
     @GetMapping("/{cnpj}")
-    public ResponseEntity<ResponseDTO<List<Setor>>> getEmpresaSetores(@PathVariable String cnpj,
+    public ResponseEntity<ResponseDTO<List<SetorResponseDTO>>> getEmpresaSetores(@PathVariable String cnpj,
                                                                       Authentication authentication) {
-
-        List<Setor> setores=setorService.getAllEmpresaSetores(cnpj);
-
-        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Setores encontrados", null));
-
-
+        List<SetorResponseDTO> setores = setorService.getAllEmpresaSetores(cnpj);
+        return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Setores encontrados", setores));
     }
 
     @PostMapping("/criar")

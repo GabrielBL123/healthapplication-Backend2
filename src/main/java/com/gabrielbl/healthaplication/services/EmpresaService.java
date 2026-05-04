@@ -3,15 +3,12 @@ package com.gabrielbl.healthaplication.services;
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
+import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-
 
 import java.util.List;
 import java.util.UUID;
@@ -60,7 +57,19 @@ public class EmpresaService {
     }
 
 
-    public List<Empresa> getAllEmpresas() {
-        return empresaRepository.findAll();
+    public List<EmpresaResponseDTO> getAllEmpresas() {
+        return empresaRepository.findAll().stream()
+                .map(this::toDTO)
+                .toList();
+    }
+
+    private EmpresaResponseDTO toDTO(Empresa empresa) {
+        return new EmpresaResponseDTO(
+                empresa.getId(),
+                empresa.getCnpj(),
+                empresa.getNome(),
+                empresa.getEmail(),
+                empresa.getTelefone()
+        );
     }
 }
