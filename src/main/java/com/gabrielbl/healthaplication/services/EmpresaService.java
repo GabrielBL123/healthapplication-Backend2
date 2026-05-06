@@ -3,6 +3,8 @@ package com.gabrielbl.healthaplication.services;
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
+import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.AvaliacaoLink;
@@ -10,6 +12,8 @@ import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.AvaliacaoLinkRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 
@@ -65,8 +69,12 @@ public class EmpresaService {
     }
 
 
-    public List<Empresa> getAllEmpresas() {
-        return empresaRepository.findAll();
+    public Page<EmpresaResponseDTO> getAllEmpresas(Pageable pageable) {
+
+        Page<Empresa> page = empresaRepository.findAll(pageable);
+
+        return page.map(a ->
+                new EmpresaResponseDTO(a.getId(),a.getCnpj(),a.getNome(),a.getEmail(),a.getTelefone()));
     }
 
     public String gerarLinkAvaliacao(UUID empresaId, Integer horasExpiracao) {

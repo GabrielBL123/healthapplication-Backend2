@@ -1,11 +1,15 @@
 package com.gabrielbl.healthaplication.controller;
 
 
+import com.gabrielbl.healthaplication.model.DTOs.AtualizarUsuarioResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.UserResponseDTO;
 import com.gabrielbl.healthaplication.model.Usuario;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import com.gabrielbl.healthaplication.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -13,64 +17,55 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/usuario")
 public class UsuarioController {
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+
 
     @Autowired
     private UserService userService;
 
 
     @GetMapping
-    public ResponseEntity<UserResponseDTO> informarUsuario(Authentication authentication) {
+    public ResponseEntity<ResponseDTO<Page<UserResponseDTO>>> getAllUsers(Pageable pageable) {
 
-        return ResponseEntity.ok().body(userService.informarUsuario(authentication));
+        Page<UserResponseDTO> usuarios =  userService.getAllUsuarios(pageable);
+
+        return ResponseEntity.ok().body(new ResponseDTO<>("usuarios", usuarios));
     }
 
     // CREATE
     @PostMapping
-    public Usuario createUser(@RequestBody Usuario usuario) {
-        return usuarioRepository.save(usuario);
+    public ResponseEntity<ResponseDTO<?>> createUser(@RequestBody Usuario usuario) {
+
+        userService.createUser(usuario);
+
+        return ResponseEntity.ok().body(new ResponseDTO<>("usuario", null));
     }
-    /*
-        // READ ALL
-        @GetMapping
-        public List<Usuario> getAllUsers() {
-            return usuarioRepository.findAll();
-        }
 
 
-     */
+
+
     // READ ONE
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> getUserById(@PathVariable String id) {
-        return usuarioRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ResponseDTO<UserResponseDTO>> getUserById(@PathVariable String id) {
+
+        UserResponseDTO usuario = userService.getUserById(id);
+
+        return ResponseEntity.ok().body(new ResponseDTO<>("usuario", usuario));
     }
 
     // UPDATE
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> updateUser(@PathVariable String id, @RequestBody Usuario usuarioDetails) {
-        return usuarioRepository.findById(id)
-                .map(user -> {
-                    user.setLogin(usuarioDetails.getLogin());
-                    user.setPassword(usuarioDetails.getPassword());
-                    user.setRole(usuarioDetails.getRole());
-                    usuarioRepository.save(user);
-                    return ResponseEntity.ok(user);
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ResponseDTO<UserResponseDTO>> updateUser(@PathVariable String id,
+                                                                   @RequestBody AtualizarUsuarioResponseDTO novosDados) {
+        UserResponseDTO usuario = userService.updateUser(id, novosDados);
+
+        return ResponseEntity.ok().body(new ResponseDTO<>("usuario atualizado", usuario));
     }
 
     // DELETE
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String id) {
-        return usuarioRepository.findById(id)
-                .map(user -> {
-                    usuarioRepository.delete(user);
-                    return ResponseEntity.ok().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<ResponseDTO<?>> deleteUser(@PathVariable String id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok().body(new ResponseDTO<>("usuario deletado", null));
     }
 
 

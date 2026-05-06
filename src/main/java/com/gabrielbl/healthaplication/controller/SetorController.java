@@ -3,9 +3,12 @@ package com.gabrielbl.healthaplication.controller;
 import com.gabrielbl.healthaplication.exception.DuplicateEntityException;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarSetorDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.SetorResponseDTO;
 import com.gabrielbl.healthaplication.model.Setor;
 import com.gabrielbl.healthaplication.services.SetorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -25,14 +28,17 @@ public class SetorController {
 
 
     @GetMapping
-    public ResponseEntity<ResponseDTO<?>> getAllSetores() {
-        return ResponseEntity.ok(new ResponseDTO<>("Todos os setores retornados",setorService.getAllSetores()));
-    }
-    @GetMapping("/{cnpj}")
-    public ResponseEntity<ResponseDTO<List<Setor>>> getEmpresaSetores(@PathVariable String cnpj,
-                                                                      Authentication authentication) {
+    public ResponseEntity<ResponseDTO<Page<SetorResponseDTO>>> getAllSetores(Pageable pageable) {
 
-        List<Setor> setores=setorService.getAllEmpresaSetores(cnpj);
+        Page<SetorResponseDTO> setores = setorService.getAllSetores(pageable);
+
+        return ResponseEntity.ok(new ResponseDTO<>("Todos os setores retornados",setores));
+    }
+
+    @GetMapping("/{cnpj}")
+    public ResponseEntity<ResponseDTO<Page<SetorResponseDTO>>> getEmpresaSetores(Pageable pageable,@PathVariable String cnpj) {
+
+        Page<SetorResponseDTO> setores=setorService.getAllEmpresaSetores(cnpj,pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Setores encontrados", setores));
 

@@ -3,6 +3,7 @@ package com.gabrielbl.healthaplication.services;
 import com.gabrielbl.healthaplication.exception.BusinessException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarSetorDTO;
+import com.gabrielbl.healthaplication.model.DTOs.SetorResponseDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Setor;
 import com.gabrielbl.healthaplication.model.Usuario;
@@ -10,6 +11,8 @@ import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.SetorRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -72,14 +75,24 @@ public class SetorService {
         setorRepository.save(setor);
     }
 
-    public List<Setor> getAllSetores() {
-          return setorRepository.findAll();
+    public Page<SetorResponseDTO> getAllSetores(Pageable pageable) {
+
+        Page<Setor> setores = setorRepository.findAll(pageable);
+
+
+        return setores.map(a -> new SetorResponseDTO(a.getId(),a.getNome(),
+                a.getEmpresa().getId(),a.getEmpresa().getNome()) );
     }
 
-    public List<Setor> getAllEmpresaSetores(String cnpj) {
+    public Page<SetorResponseDTO> getAllEmpresaSetores(String cnpj,Pageable pageable) {
 
         Empresa empresa = empresaRepository.findByCnpj(cnpj);
 
-        return empresa.getSetores();
+        if(empresa == null) throw new NotFoundException("Cnpj nao encontrado");
+
+        Page<Setor> setores = setorRepository.findByEmpresaCnpj(empresa.getCnpj(), pageable);
+
+        return setores.map(a -> new SetorResponseDTO(a.getId(),a.getNome(),
+                a.getEmpresa().getId(),a.getEmpresa().getNome()));
     }
 }

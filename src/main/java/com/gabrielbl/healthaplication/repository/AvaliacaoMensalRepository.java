@@ -1,6 +1,9 @@
 package com.gabrielbl.healthaplication.repository;
 
 import com.gabrielbl.healthaplication.model.AvaliacaoMensal;
+import com.gabrielbl.healthaplication.model.Empresa;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
 
@@ -10,6 +13,9 @@ import java.util.UUID;
 
 public interface AvaliacaoMensalRepository extends JpaRepository<AvaliacaoMensal, UUID>{
 
+    Page<AvaliacaoMensal> findEmpresaById(Empresa empresa, Pageable pageable);
+
+    Page<AvaliacaoMensal> findByEmpresa(Empresa empresa, Pageable pageable);
 
     AvaliacaoMensal findByCompetenciaAndEmpresaId(String  competencia,UUID empresaId);
 

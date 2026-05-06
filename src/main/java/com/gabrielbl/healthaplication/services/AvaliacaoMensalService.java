@@ -4,9 +4,13 @@ import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalDTO;
+import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
 import com.gabrielbl.healthaplication.repository.*;
 import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -97,16 +101,23 @@ public class AvaliacaoMensalService {
     }
 
 
-    public List<AvaliacaoMensal> getAll() {
+    public Page<AvaliacaoMensalResponseDTO> getAll(Pageable pageable) {
 
-        return avaliacaoMensalRepository.findAll();
+
+        Page<AvaliacaoMensal> page = avaliacaoMensalRepository.findAll(pageable);
+
+        return page.map(a ->
+                        new AvaliacaoMensalResponseDTO(a.getId(),a.getCompetencia(),a.getIsActive()));
     }
 
-    public List<AvaliacaoMensal> getEmpresaAvaliacoes(UUID empresaId) {
+    public Page<AvaliacaoMensalResponseDTO> getEmpresaAvaliacoes(Pageable pageable,UUID empresaId) {
 
         Empresa empresa = empresaRepository.findById(empresaId).orElseThrow(()
                 -> new NotFoundException("Empresa nao encontrada"));
 
-        return empresa.getAvaliacoes();
+        Page<AvaliacaoMensal> page =  avaliacaoMensalRepository.findByEmpresa(empresa,pageable);
+
+        return page.map(a ->
+                new AvaliacaoMensalResponseDTO(a.getId(),a.getCompetencia(),a.getIsActive()));
     }
 }

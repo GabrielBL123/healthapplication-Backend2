@@ -2,6 +2,7 @@ package com.gabrielbl.healthaplication.controller;
 
 import com.gabrielbl.healthaplication.exception.DuplicateEntityException;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
+import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
@@ -30,8 +31,9 @@ public class EmpresaController {
 
 
     @GetMapping
-    public ResponseEntity<ResponseDTO<List<Empresa>>> getEmpresas(Authentication authentication) {
-        List<Empresa> empresas = empresaService.getAllEmpresas();
+    public ResponseEntity<ResponseDTO<Page<EmpresaResponseDTO>>> getAllEmpresas(Pageable pageable) {
+
+        Page<EmpresaResponseDTO> empresas = empresaService.getAllEmpresas(pageable);
         return ResponseEntity.ok(new ResponseDTO<>("Empresas encontradas", empresas));
     }
 

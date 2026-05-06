@@ -1,7 +1,9 @@
 package com.gabrielbl.healthaplication.services;
 
 
+import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
+import com.gabrielbl.healthaplication.model.DTOs.AtualizarUsuarioResponseDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Setor;
 import com.gabrielbl.healthaplication.model.Usuario;
@@ -9,7 +11,10 @@ import com.gabrielbl.healthaplication.model.DTOs.UserResponseDTO;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.SetorRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -47,20 +52,24 @@ public class UserService {
     /**
      * Get user by ID
      */
-    public Optional<UserResponseDTO> getUserById(String id) {
-        return usuarioRepository.findById(id)
-                .map(this::convertToDTO);
+    public UserResponseDTO getUserById(String id) {
+
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new NotFoundException("Usuario nao encontrado"));
+
+        return convertToDTO(usuario);
+
     }
 
     /**
      * Delete user by ID
      */
-    public boolean deleteUser(String id) {
-        if (usuarioRepository.existsById(id)) {
+    public void deleteUser(String id) {
+        if(usuarioRepository.findById(id).isPresent()) {
             usuarioRepository.deleteById(id);
-            return true;
         }
-        return false;
+        else  {
+            throw new NotFoundException("Usuario nao encontrado");
+        }
     }
 
     /**
@@ -79,7 +88,7 @@ public class UserService {
         return new UserResponseDTO(
                 usuario.getLogin(),
                 usuario.getNome(),
-                usuario.getRole().name(),
+                usuario.getRole(),
                 usuario.getCargo(),
                 usuarioSetorNome,
                 usuario.getTempoDeTrabalho(),
@@ -89,31 +98,44 @@ public class UserService {
         );
     }
 
-    public UserResponseDTO informarUsuario(Authentication authentication) {
+    public Page<UserResponseDTO> getAllUsuarios(Pageable pageable) {
 
-        Usuario usuario = usuarioRepository.findByLogin(authentication.getName());
+        Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
 
-        if(usuario == null) {
-            throw new NotFoundException("Usuario nao encontrado");
+
+        return usuarios.map(a -> new UserResponseDTO(a.getLogin(),a.getNome(),
+                a.getRole(),a.getCargo(),a.getSetor().getNome(),
+                a.getTempoDeTrabalho(),a.getJornada(),a.getEmpresa().getNome()));
+
+    }
+
+    public void createUser(Usuario usuario) {
+
+        if(usuarioRepository.findByLogin(usuario.getLogin())!=null)
+            throw new AlreadySubmittedException("Login ja existente");
+
+        usuarioRepository.save(usuario);
+
+    }
+
+    public UserResponseDTO updateUser(String id, AtualizarUsuarioResponseDTO novosDados) {
+
+
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() ->
+                new NotFoundException("Usuario nao encontrado"));
+
+        usuario.setNome(novosDados.nome());
+        usuario.setCargo(novosDados.cargo());
+        usuario.setRole(novosDados.role());
+        usuario.setLogin(novosDados.login());
+        usuario.setJornada(novosDados.jornada());
+        usuario.setTempoDeTrabalho(novosDados.tempoDeTrabalho());
+        if (novosDados.password() != null && !novosDados.password().isBlank()) {
+            usuario.setPassword(passwordEncoder.encode(novosDados.password()));
         }
 
+        usuarioRepository.save(usuario);
+
         return convertToDTO(usuario);
-
-    }
-
-    public UserResponseDTO createUser(Usuario usuario) {
-        Usuario saved = usuarioRepository.save(usuario);
-        return convertToDTO(saved);
-    }
-
-    public Optional<UserResponseDTO> updateUser(String id, Usuario userDetails) {
-        return usuarioRepository.findById(id).map(user -> {
-            user.setLogin(userDetails.getLogin());
-            if (userDetails.getPassword() != null && !userDetails.getPassword().isBlank()) {
-                user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
-            }
-            user.setRole(userDetails.getRole());
-            return convertToDTO(usuarioRepository.save(user));
-        });
     }
 }
