@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("auth")
+@RequestMapping("/auth")
 public class AuthenticationController {
 
 
@@ -34,13 +34,13 @@ public class AuthenticationController {
     private AutorizacaoService autorizacaoService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@RequestBody @Validated AutenticacaoDTO data, HttpServletResponse response){
+    public ResponseEntity<ResponseDTO<LoginResponseDTO>> login(@RequestBody @Validated AutenticacaoDTO data, HttpServletResponse response){
 
         LoginResponseDTO loginResponseDTO = autorizacaoService.autenticarUsuario(data);
         Cookie cookie = autorizacaoService.createJwtCookie(loginResponseDTO.token());
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(loginResponseDTO);
+        return ResponseEntity.ok(new ResponseDTO<>(loginResponseDTO.token(), loginResponseDTO));
     }
 
     @PostMapping("/registrar")

@@ -5,9 +5,11 @@ import com.gabrielbl.healthaplication.model.UsuarioFuncao;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-public record UserResponseDTO(String login, String nome, UsuarioFuncao role,
-                              String cargo, String nomeSetor, LocalDateTime tempoDeTrabalho,
-                              Duration jornada, String empresaNome) {
+public record UserResponseDTO(String login, String nome,String password, UsuarioFuncao role,
+                              String empresaEmail,
+                              String cargo, String nomeSetor,
+                              LocalDateTime tempoDeTrabalho,
+                              Duration jornada ) {
 
 
 

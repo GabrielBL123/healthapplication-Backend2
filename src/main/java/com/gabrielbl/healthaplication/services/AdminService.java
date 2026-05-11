@@ -1,6 +1,7 @@
 package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
+import com.gabrielbl.healthaplication.model.DTOs.RegistrarAdminDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarRhDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Usuario;
@@ -76,6 +77,16 @@ public class AdminService {
     }
 
 
+    public void criarAdmin(RegistrarAdminDTO data) {
 
+        if(usuarioRepository.findByLogin(data.login()) != null)
+            throw new AlreadySubmittedException("Usuário ja cadastrado");
+
+        String encryptedPassword = passwordEncoder.encode(data.password());
+        Usuario newUsuario = new Usuario(
+                data.login(),data.nome(), encryptedPassword, data.role(),null,null,null,null);
+
+        usuarioRepository.save(newUsuario);
+    }
 }
 

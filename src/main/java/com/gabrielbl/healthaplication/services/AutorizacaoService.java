@@ -9,10 +9,12 @@ import com.gabrielbl.healthaplication.model.DTOs.LoginResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Usuario;
+import com.gabrielbl.healthaplication.model.UsuarioFuncao;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,11 +34,10 @@ import java.util.stream.Collectors;
 
 public class AutorizacaoService {
 
-
+    @Lazy
     @Autowired
     private AuthenticationManager authenticationManager;
-    @Autowired
-    private UsuarioRepository repository;
+
 
     @Autowired
     private JavaMailSender mailSender;
@@ -67,9 +68,16 @@ public class AutorizacaoService {
 
         // generate token (TokenService will also include roles claim)
         var accessToken = tokenService.generateToken(principal);
+        Usuario usuario = usuarioRepository.findByLogin(data.login());
 
+        //Caso o usuario seja admin, nao retorna a informacao da empresa
+        if(usuario.getRole().equals(UsuarioFuncao.ADMIN)) {
+            return new LoginResponseDTO(accessToken, roles,usuario.getNome(),usuario.getLogin(),
+                    "Usuário Admin","Nao informado", usuario.getId());
+        }
 
-        return  new LoginResponseDTO(accessToken, roles);
+        return  new LoginResponseDTO(accessToken, roles,usuario.getNome(),usuario.getLogin(),
+                usuario.getEmpresa().getNome(),usuario.getEmpresa().getId().toString(), usuario.getId());
 
 
     }

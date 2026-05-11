@@ -12,8 +12,8 @@ import java.util.UUID;
 @Table(name = "setores")
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-
+@Getter
+@Setter
 public class Setor {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

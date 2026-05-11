@@ -3,6 +3,7 @@ package com.gabrielbl.healthaplication.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gabrielbl.healthaplication.model.DTOs.UserResponseDTO;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -48,7 +49,6 @@ public class Usuario implements UserDetails {
 
     @ManyToOne
     @JoinColumn(name = "empresa_id")
-    @JsonBackReference
     private Empresa empresa;
 
 
@@ -92,9 +92,22 @@ public class Usuario implements UserDetails {
         };
     }
 
+    public UserResponseDTO toDTO() {
+        return new UserResponseDTO(
+                this.id,
+                this.login,
+                this.nome,
+                this.role,
+                this.cargo,
+                this.setor != null ? this.setor.getNome() : null,
+                this.empresa != null ? this.empresa.getNome() : null,
+                this.tempoDeTrabalho,
+                this.jornada
+        );
+    }
+
 
     @Override
-    @JsonIgnore
     public String getPassword() {
         return this.password;
     }

@@ -88,12 +88,14 @@ public class UserService {
         return new UserResponseDTO(
                 usuario.getLogin(),
                 usuario.getNome(),
+                usuario.getPassword(),
                 usuario.getRole(),
+                empresa.getEmail(),
                 usuario.getCargo(),
                 usuarioSetorNome,
                 usuario.getTempoDeTrabalho(),
-                usuario.getJornada(),
-                empresa.getEmail()
+                usuario.getJornada()
+
 
         );
     }
@@ -103,9 +105,10 @@ public class UserService {
         Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
 
 
-        return usuarios.map(a -> new UserResponseDTO(a.getLogin(),a.getNome(),
-                a.getRole(),a.getCargo(),a.getSetor().getNome(),
-                a.getTempoDeTrabalho(),a.getJornada(),a.getEmpresa().getNome()));
+        return usuarios.map(a -> new UserResponseDTO(a.getLogin(),a.getNome(),"",
+                a.getRole(),a.getEmpresa().getEmail(),a.getCargo(),
+                a.getSetor() != null ? a.getSetor().getNome() : "Nenhum",
+                a.getTempoDeTrabalho(),a.getJornada()));
 
     }
 
