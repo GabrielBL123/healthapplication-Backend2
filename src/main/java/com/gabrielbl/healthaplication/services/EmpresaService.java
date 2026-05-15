@@ -3,7 +3,6 @@ package com.gabrielbl.healthaplication.services;
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
-import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
@@ -11,29 +10,26 @@ import com.gabrielbl.healthaplication.model.AvaliacaoLink;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.AvaliacaoLinkRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-
 @Service
-
 public class EmpresaService {
 
+    private final EmpresaRepository empresaRepository;
+    private final AvaliacaoLinkRepository avaliacaoLinkRepository;
 
-
-    @Autowired
-    private EmpresaRepository empresaRepository;
-
-    @Autowired
-    private AvaliacaoLinkRepository avaliacaoLinkRepository;
+    public EmpresaService(EmpresaRepository empresaRepository,
+                          AvaliacaoLinkRepository avaliacaoLinkRepository) {
+        this.empresaRepository = empresaRepository;
+        this.avaliacaoLinkRepository = avaliacaoLinkRepository;
+    }
 
     public void criarEmpresa(RegistrarEmpresaDTO data) {
 

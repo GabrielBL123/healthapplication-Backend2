@@ -2,7 +2,6 @@ package com.gabrielbl.healthaplication.infra.security;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -36,32 +35,28 @@ public class SecurityConfigurations {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-
+                        // Preflight requests must always pass
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
 
+                        // Public auth endpoints
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/registrar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/enviar_link_email").permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/HelloWorld").hasRole("ADMIN")
+                        // Admin-only management endpoints
+                        .requestMatchers(HttpMethod.POST, "/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/HelloWorld").hasRole("ADMIN")
 
-                        .requestMatchers(HttpMethod.POST, "/registrar/empresa").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/registrar/setores").permitAll()
+                        // Company / sector registration (public so new companies can sign up)
+                        .requestMatchers(HttpMethod.POST, "/empresa/criar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/setores/criar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/empresa").permitAll()
 
-                        .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/users").hasRole("ADMIN")
-
-                        .requestMatchers(HttpMethod.POST, "/admin/registrar_rh").permitAll()
-
-                        .requestMatchers(HttpMethod.POST, "/avalicao_mensal/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/").permitAll()
+                        // Authenticated-only access for everything else
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-
     }
 
 

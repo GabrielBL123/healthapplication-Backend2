@@ -1,30 +1,27 @@
 package com.gabrielbl.healthaplication.controller;
 
 
-import com.gabrielbl.healthaplication.model.AvaliacaoMensal;
-import com.gabrielbl.healthaplication.model.AvaliacaoSetor;
 import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalDTO;
 import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.services.AvaliacaoMensalService;
-
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/avaliacoes-mensais")
 public class AvaliacaoMensalController {
 
-    @Autowired
-    private AvaliacaoMensalService avaliacaoService;
+    private final AvaliacaoMensalService avaliacaoService;
+
+    public AvaliacaoMensalController(AvaliacaoMensalService avaliacaoService) {
+        this.avaliacaoService = avaliacaoService;
+    }
 
 
     /**
@@ -52,7 +49,7 @@ public class AvaliacaoMensalController {
 
 
     @PostMapping("/iniciar")
-    public ResponseEntity<ResponseDTO<?>> iniciarAvaliacaoMensal(@RequestBody AvaliacaoMensalDTO data) {
+    public ResponseEntity<ResponseDTO<?>> iniciarAvaliacaoMensal(@Validated @RequestBody AvaliacaoMensalDTO data) {
 
 
         avaliacaoService.criarEIniciarAvaliacaoMensal(data);
@@ -62,7 +59,7 @@ public class AvaliacaoMensalController {
 
 
     @PostMapping("/finalizar")
-    public ResponseEntity<ResponseDTO<?>> finalizarAvaliacaoMensal(@RequestBody AvaliacaoMensalDTO data) {
+    public ResponseEntity<ResponseDTO<?>> finalizarAvaliacaoMensal(@Validated @RequestBody AvaliacaoMensalDTO data) {
 
         avaliacaoService.finalizarAvaliacaoMensal(data);
 
@@ -72,7 +69,7 @@ public class AvaliacaoMensalController {
     }
 
     @PostMapping("/deletar")
-    public ResponseEntity<ResponseDTO<?>> deletarAvaliacaoMensal(@RequestBody AvaliacaoMensalDTO data){
+    public ResponseEntity<ResponseDTO<?>> deletarAvaliacaoMensal(@Validated @RequestBody AvaliacaoMensalDTO data){
 
         avaliacaoService.deletarAvaliacaoMensal(data);
 

@@ -4,6 +4,7 @@ package com.gabrielbl.healthaplication.services;
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarUsuarioResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.CriarUsuarioDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Setor;
 import com.gabrielbl.healthaplication.model.Usuario;
@@ -11,121 +12,63 @@ import com.gabrielbl.healthaplication.model.DTOs.UserResponseDTO;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.SetorRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
-import org.apache.catalina.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static com.gabrielbl.healthaplication.model.UsuarioFuncao.USER;
 
 @Service
 public class UserService {
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EmpresaRepository empresaRepository;
+    private final SetorRepository setorRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private EmpresaRepository empresaRepository;
-
-    @Autowired
-    private SetorRepository setorRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    /**
-     * Get all users (converts to DTO to hide sensitive data)
-     */
-    public List<UserResponseDTO> getAllUsers() {
-        return usuarioRepository.findAll().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+    public UserService(UsuarioRepository usuarioRepository,
+                       EmpresaRepository empresaRepository,
+                       SetorRepository setorRepository,
+                       PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.empresaRepository = empresaRepository;
+        this.setorRepository = setorRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Get user by ID
-     */
     public UserResponseDTO getUserById(String id) {
-
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new NotFoundException("Usuario nao encontrado"));
-
-        return convertToDTO(usuario);
-
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuario nao encontrado"));
+        return toDTO(usuario);
     }
 
-    /**
-     * Delete user by ID
-     */
     public void deleteUser(String id) {
-        if(usuarioRepository.findById(id).isPresent()) {
-            usuarioRepository.deleteById(id);
-        }
-        else  {
-            throw new NotFoundException("Usuario nao encontrado");
-        }
-    }
-
-    /**
-     * Business logic: Convert Usuario entity to DTO (hide password)
-     */
-    private UserResponseDTO convertToDTO(Usuario usuario) {
-        Setor setor = usuario.getSetor();
-        Empresa empresa = usuario.getEmpresa();
-
-        String usuarioSetorNome = "";
-
-        if(setor != null)
-            usuarioSetorNome = "Nenhum";
-
-
-        return new UserResponseDTO(
-                usuario.getLogin(),
-                usuario.getNome(),
-                usuario.getPassword(),
-                usuario.getRole(),
-                empresa.getEmail(),
-                usuario.getCargo(),
-                usuarioSetorNome,
-                usuario.getTempoDeTrabalho(),
-                usuario.getJornada()
-
-
-        );
+        usuarioRepository.findById(id).orElseThrow(() -> new NotFoundException("Usuario nao encontrado"));
+        usuarioRepository.deleteById(id);
     }
 
     public Page<UserResponseDTO> getAllUsuarios(Pageable pageable) {
-
-        Page<Usuario> usuarios = usuarioRepository.findAll(pageable);
-
-
-        return usuarios.map(a -> new UserResponseDTO(a.getLogin(),a.getNome(),"",
-                a.getRole(),a.getEmpresa().getEmail(),a.getCargo(),
-                a.getSetor() != null ? a.getSetor().getNome() : "Nenhum",
-                a.getTempoDeTrabalho(),a.getJornada()));
-
+        return usuarioRepository.findAll(pageable).map(this::toDTO);
     }
 
-    public void createUser(Usuario usuario) {
-
-        if(usuarioRepository.findByLogin(usuario.getLogin())!=null)
+    public void createUser(CriarUsuarioDTO data) {
+        if (usuarioRepository.findByLogin(data.login()) != null)
             throw new AlreadySubmittedException("Login ja existente");
 
-        usuarioRepository.save(usuario);
+        Empresa empresa = null;
+        if (data.empresaCnpj() != null && !data.empresaCnpj().isBlank()) {
+            empresa = empresaRepository.findByCnpj(data.empresaCnpj());
+            if (empresa == null) throw new NotFoundException("Empresa nao encontrada");
+        }
 
+        String encryptedPassword = passwordEncoder.encode(data.password());
+        Usuario usuario = new Usuario(data.login(), data.nome(), encryptedPassword, data.role(),
+                empresa, data.cargo(), data.tempoDeTrabalho(), data.jornada());
+        usuarioRepository.save(usuario);
     }
 
     public UserResponseDTO updateUser(String id, AtualizarUsuarioResponseDTO novosDados) {
-
-
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() ->
-                new NotFoundException("Usuario nao encontrado"));
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuario nao encontrado"));
 
         usuario.setNome(novosDados.nome());
         usuario.setCargo(novosDados.cargo());
@@ -138,7 +81,22 @@ public class UserService {
         }
 
         usuarioRepository.save(usuario);
+        return toDTO(usuario);
+    }
 
-        return convertToDTO(usuario);
+    private UserResponseDTO toDTO(Usuario usuario) {
+        String nomeSetor = usuario.getSetor() != null ? usuario.getSetor().getNome() : "Nenhum";
+        String empresaEmail = usuario.getEmpresa() != null ? usuario.getEmpresa().getEmail() : "";
+        return new UserResponseDTO(
+                usuario.getLogin(),
+                usuario.getNome(),
+                "",
+                usuario.getRole(),
+                empresaEmail,
+                usuario.getCargo(),
+                nomeSetor,
+                usuario.getTempoDeTrabalho(),
+                usuario.getJornada()
+        );
     }
 }

@@ -4,34 +4,29 @@ package com.gabrielbl.healthaplication.controller;
 
 import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.AutenticacaoDTO;
+import com.gabrielbl.healthaplication.model.DTOs.EnviarConviteDTO;
 import com.gabrielbl.healthaplication.model.DTOs.LoginResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
-import com.gabrielbl.healthaplication.repository.EmpresaRepository;
-import com.gabrielbl.healthaplication.repository.UsuarioRepository;
-import com.gabrielbl.healthaplication.infra.security.TokenService;
 import com.gabrielbl.healthaplication.services.AutorizacaoService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/auth")
 public class AuthenticationController {
 
+    private final AutorizacaoService autorizacaoService;
 
-    @Autowired
-    private AutorizacaoService autorizacaoService;
+    public AuthenticationController(AutorizacaoService autorizacaoService) {
+        this.autorizacaoService = autorizacaoService;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<ResponseDTO<LoginResponseDTO>> login(@RequestBody @Validated AutenticacaoDTO data, HttpServletResponse response){
@@ -53,17 +48,9 @@ public class AuthenticationController {
 
 
 
-    // ENVIAR CONVITE PARA FUNCIONÁRIO
-
     @PostMapping("/enviar_link_email")
-    public ResponseEntity<ResponseDTO<?>> enviarLinkDeRegistro(@RequestBody Map<String, String> requestBody){
-
-        String emailFuncionario = requestBody.get("email");
-
-        autorizacaoService.enviarEmail(emailFuncionario);
-
-
-
+    public ResponseEntity<ResponseDTO<?>> enviarLinkDeRegistro(@Validated @RequestBody EnviarConviteDTO data){
+        autorizacaoService.enviarEmail(data.email());
         return ResponseEntity.ok().build();
     }
 }

@@ -8,7 +8,6 @@ import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
 import com.gabrielbl.healthaplication.repository.*;
 import jakarta.transaction.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,44 +21,41 @@ import java.util.UUID;
 @Transactional
 public class AvaliacaoMensalService {
 
-    @Autowired
-    private AvaliacaoMensalRepository avaliacaoMensalRepository;
+    private final AvaliacaoMensalRepository avaliacaoMensalRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final EmpresaRepository empresaRepository;
+    private final AvaliacaoSetorRepository avaliacaoSetorRepository;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private EmpresaRepository empresaRepository;
-
-    @Autowired
-    private AvaliacaoSetorRepository avaliacaoSetorRepository;
+    public AvaliacaoMensalService(AvaliacaoMensalRepository avaliacaoMensalRepository,
+                                  UsuarioRepository usuarioRepository,
+                                  EmpresaRepository empresaRepository,
+                                  AvaliacaoSetorRepository avaliacaoSetorRepository) {
+        this.avaliacaoMensalRepository = avaliacaoMensalRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.empresaRepository = empresaRepository;
+        this.avaliacaoSetorRepository = avaliacaoSetorRepository;
+    }
 
     public void criarEIniciarAvaliacaoMensal(AvaliacaoMensalDTO data) {
 
-
-
         Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
+        if (empresa == null) throw new NotFoundException("Empresa nao encontrada");
 
-        if((avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(
-                data.competencia(), empresa.getId(),true)!=null)){
+        if (avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(
+                data.competencia(), empresa.getId(), true) != null) {
             throw new AlreadySubmittedException("Avaliacao Mensal ja existente e ativa nessa empresa");
         }
-
-
-
 
         AvaliacaoMensal avaliacaoMensal = new AvaliacaoMensal();
         avaliacaoMensal.setCompetencia(data.competencia());
         avaliacaoMensal.setIsActive(true);
         avaliacaoMensal.setEmpresa(empresa);
 
-
         List<AvaliacaoSetor> setores = new ArrayList<>();
-        for (Setor Setor : empresa.getSetores()){
+        for (Setor setor : empresa.getSetores()) {
             AvaliacaoSetor avaliacaoSetor = new AvaliacaoSetor();
-            avaliacaoSetor.setSetor(Setor);
+            avaliacaoSetor.setSetor(setor);
             avaliacaoSetor.setAvaliacaoMensal(avaliacaoMensal);
-                //avaliacaoSetorRepository.save(avaliacaoSetor);
             setores.add(avaliacaoSetor);
         }
 
@@ -67,26 +63,19 @@ public class AvaliacaoMensalService {
         avaliacaoMensal.setCreatedAt(LocalDateTime.now());
 
         avaliacaoMensalRepository.save(avaliacaoMensal);
-
-
-
     }
 
 
     public void finalizarAvaliacaoMensal(AvaliacaoMensalDTO data) {
 
-
         Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
-        if(empresa ==null) throw new NotFoundException("Empresa nao encontrada");
+        if (empresa == null) throw new NotFoundException("Empresa nao encontrada");
 
-        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(data.competencia(), empresa.getId(),true   );
-        if(avaliacaoMensal.getIsActive()==false) throw new NotFoundException("Avaliacao Mensal ativa nao existente");
+        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository
+                .findByCompetenciaAndEmpresaIdAndIsActive(data.competencia(), empresa.getId(), true);
+        if (avaliacaoMensal == null) throw new NotFoundException("Avaliacao Mensal ativa nao existente");
 
         avaliacaoMensal.setIsActive(false);
-
-
-
-
     }
 
     public void deletarAvaliacaoMensal(AvaliacaoMensalDTO data) {
