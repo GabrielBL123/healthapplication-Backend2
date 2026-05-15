@@ -2,14 +2,16 @@ package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
+import com.gabrielbl.healthaplication.model.AvaliacaoMensal;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
-import com.gabrielbl.healthaplication.model.AvaliacaoLink;
+import com.gabrielbl.healthaplication.model.AvaliacaoTokenLink;
+import com.gabrielbl.healthaplication.repository.AvaliacaoMensalRepository;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
-import com.gabrielbl.healthaplication.repository.AvaliacaoLinkRepository;
+import com.gabrielbl.healthaplication.repository.AvaliacaoTokenLinkRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,7 +35,10 @@ public class EmpresaService {
     private EmpresaRepository empresaRepository;
 
     @Autowired
-    private AvaliacaoLinkRepository avaliacaoLinkRepository;
+    private AvaliacaoTokenLinkRepository avaliacaoLinkRepository;
+
+    @Autowired
+    private AvaliacaoMensalRepository avaliacaoMensalRepository;
 
     public void criarEmpresa(RegistrarEmpresaDTO data) {
 
@@ -77,31 +82,6 @@ public class EmpresaService {
                 new EmpresaResponseDTO(a.getId(),a.getCnpj(),a.getNome(),a.getEmail(),a.getTelefone()));
     }
 
-    public String gerarLinkAvaliacao(UUID empresaId, Integer horasExpiracao) {
-        Empresa empresa = empresaRepository.findById(empresaId)
-                .orElseThrow(() -> new EntityNotFoundException("Empresa nao encontrada"));
-
-        // Generate a unique link token
-        String linkToken = UUID.randomUUID().toString();
-
-        // Calculate expiry time (optional)
-        LocalDateTime expiracaoEm = horasExpiracao != null
-                ? LocalDateTime.now().plusHours(horasExpiracao)
-                : null;
-
-        // Save the link information in the database
-        AvaliacaoLink avaliacaoLink = new AvaliacaoLink();
-        avaliacaoLink.setEmpresaId(empresaId);
-        avaliacaoLink.setLinkToken(linkToken);
-        avaliacaoLink.setExpiraEm(expiracaoEm);
-        avaliacaoLinkRepository.save(avaliacaoLink);
-
-        // Return the generated link
-        return "https://cuidarmais.com/avaliacao/" + linkToken;
-
-
-
-    }
 
 
     public Empresa getEmpresa(UUID id) {

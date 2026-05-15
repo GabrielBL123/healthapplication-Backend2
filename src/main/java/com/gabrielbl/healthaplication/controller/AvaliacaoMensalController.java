@@ -49,7 +49,7 @@ public class AvaliacaoMensalController {
     @GetMapping("/gerar-link")
     private ResponseEntity<ResponseDTO<?>> gerarLink(@Validated @RequestBody GerarLinkDTO data) {
 
-        String link = avaliacaoService.gerarLink(data);
+        String link = avaliacaoService.gerarLinkAvaliacao(data.cnpj(), data.horasValidade());
         return ResponseEntity.ok(new ResponseDTO<>("link gerado com sucesso",link));
     }
 

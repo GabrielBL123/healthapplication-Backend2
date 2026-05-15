@@ -5,7 +5,9 @@ import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalDTO;
 import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.GerarLinkDTO;
 import com.gabrielbl.healthaplication.repository.*;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,9 @@ public class AvaliacaoMensalService {
 
     @Autowired
     private AvaliacaoSetorRepository avaliacaoSetorRepository;
+
+    @Autowired
+    private AvaliacaoTokenLinkRepository avaliacaoTokenLinkRepository;
 
     public void criarEIniciarAvaliacaoMensal(AvaliacaoMensalDTO data) {
 
@@ -119,5 +124,34 @@ public class AvaliacaoMensalService {
 
         return page.map(a ->
                 new AvaliacaoMensalResponseDTO(a.getId(),a.getCompetencia(),a.getIsActive()));
+    }
+
+    public String gerarLinkAvaliacao(String cnpj, Integer horasExpiracao) {
+        Empresa empresa = empresaRepository.findByCnpj(cnpj);
+        if(empresa ==null) throw new NotFoundException("Empresa nao encontrada");
+
+        // Generate a unique link token
+        String linkToken = UUID.randomUUID().toString();
+
+        // Calculate expiry time (optional)
+        LocalDateTime expiracaoEm = horasExpiracao != null
+                ? LocalDateTime.now().plusHours(horasExpiracao)
+                : null;
+
+        // Save the link information in the database
+        AvaliacaoTokenLink avaliacaoLink = new AvaliacaoTokenLink();
+
+        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByEmpresaAndIsActive(empresa, true);
+
+        avaliacaoLink.setAvaliacaoMensal(avaliacaoMensal);
+        avaliacaoLink.setToken(linkToken);
+        avaliacaoLink.setDataExpiracao(expiracaoEm);
+        avaliacaoTokenLinkRepository.save(avaliacaoLink);
+
+        // Return the generated link
+        return "https://cuidarmais.com/avaliacao/" + linkToken;
+
+
+
     }
 }
