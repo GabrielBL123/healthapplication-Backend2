@@ -45,7 +45,6 @@ public class SecurityConfigurations {
 
                         // Admin-only management endpoints
                         .requestMatchers(HttpMethod.POST, "/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/HelloWorld").hasRole("ADMIN")
 
                         // Company / sector registration (public so new companies can sign up)
                         .requestMatchers(HttpMethod.POST, "/empresa/criar").permitAll()
