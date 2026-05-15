@@ -20,4 +20,6 @@ public interface AvaliacaoMensalRepository extends JpaRepository<AvaliacaoMensal
     AvaliacaoMensal findByCompetenciaAndEmpresaId(String  competencia,UUID empresaId);
 
     AvaliacaoMensal findByCompetenciaAndEmpresaIdAndIsActive(String competencia, UUID empresaId, boolean isActive);
+
+    AvaliacaoMensal findByEmpresaAndIsActive(Empresa empresa, boolean isActive);
 }

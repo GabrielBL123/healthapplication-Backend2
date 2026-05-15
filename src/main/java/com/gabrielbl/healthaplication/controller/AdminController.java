@@ -2,7 +2,7 @@ package com.gabrielbl.healthaplication.controller;
 
 
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarAdminDTO;
-import com.gabrielbl.healthaplication.model.DTOs.RegistrarRhDTO;
+import com.gabrielbl.healthaplication.model.DTOs.RegistrarRhEEmpresaDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class AdminController {
 
 
     @PostMapping("/criar-rh-empresa")
-    ResponseEntity<ResponseDTO<RegistrarRhDTO>> criarRHEmpresa(@RequestBody @Validated RegistrarRhDTO data) {
+    ResponseEntity<ResponseDTO<RegistrarRhEEmpresaDTO>> criarRHEmpresa(@RequestBody @Validated RegistrarRhEEmpresaDTO data) {
 
         adminService.criarEVincularRhParaEmpresa(data);
 

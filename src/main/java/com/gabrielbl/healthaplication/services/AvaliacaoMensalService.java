@@ -5,6 +5,7 @@ import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalDTO;
 import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.GerarLinkDTO;
 import com.gabrielbl.healthaplication.repository.*;
 import jakarta.transaction.Transactional;
 
@@ -33,6 +34,10 @@ public class AvaliacaoMensalService {
 
     @Autowired
     private AvaliacaoSetorRepository avaliacaoSetorRepository;
+
+    @Autowired
+    private AvaliacaoTokenLinkRepository avaliacaoTokenLinkRepository;
+
 
     public void criarEIniciarAvaliacaoMensal(AvaliacaoMensalDTO data) {
 
@@ -84,6 +89,8 @@ public class AvaliacaoMensalService {
 
         avaliacaoMensal.setIsActive(false);
 
+        avaliacaoMensalRepository.save(avaliacaoMensal);
+
 
 
 
@@ -119,5 +126,39 @@ public class AvaliacaoMensalService {
 
         return page.map(a ->
                 new AvaliacaoMensalResponseDTO(a.getId(),a.getCompetencia(),a.getIsActive()));
+    }
+
+
+    public String gerarLink(GerarLinkDTO data) {
+
+        Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
+        if (empresa == null) {
+            throw new NotFoundException("empresa nao encontrada");
+        }
+        AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findByEmpresaAndIsActive(empresa,true);
+        if(avaliacao == null) {
+            throw new NotFoundException("avaliacao nao encontrada");
+        }
+
+        if(avaliacao.getAvaliacaoTokenLink() != null){
+            return "http://localhost:5173/"+avaliacao.getAvaliacaoTokenLink().toString();
+        }
+        AvaliacaoTokenLink tokenLink = new AvaliacaoTokenLink();
+        tokenLink.setToken(UUID.randomUUID().toString());
+        tokenLink.setAvaliacaoMensal(avaliacao);
+        tokenLink.setDataCriacao(LocalDateTime.now());
+        int horas = data.horasValidade() > 0 ? data.horasValidade() : 48;
+        tokenLink.setDataExpiracao(LocalDateTime.now().plusHours(horas));
+        tokenLink.setStatus(AvaliacaoStatusToken.ATIVO);
+        avaliacaoTokenLinkRepository.save(tokenLink);
+
+        return "http://yourfrontend.com/avaliacao?token=" + tokenLink.getToken();
+
+
+
+
+
+
+
     }
 }

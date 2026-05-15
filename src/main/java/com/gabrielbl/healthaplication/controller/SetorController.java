@@ -36,7 +36,7 @@ public class SetorController {
     }
 
     @GetMapping("/{cnpj}")
-    public ResponseEntity<ResponseDTO<Page<SetorResponseDTO>>> getEmpresaSetores(Pageable pageable,@PathVariable String cnpj) {
+    public ResponseEntity<ResponseDTO<Page<SetorResponseDTO>>> getSetoresInEmpresa(Pageable pageable,@PathVariable String cnpj) {
 
         Page<SetorResponseDTO> setores=setorService.getAllEmpresaSetores(cnpj,pageable);
 
@@ -73,6 +73,8 @@ public class SetorController {
 
         return ResponseEntity.ok(new ResponseDTO<>("Setor atualizado com sucesso", null));
     }
+
+
 
 
 

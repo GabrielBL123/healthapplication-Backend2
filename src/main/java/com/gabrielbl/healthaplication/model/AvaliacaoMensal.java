@@ -50,4 +50,8 @@ public class AvaliacaoMensal {
 
     @OneToMany(mappedBy = "avaliacaoMensal",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<AvaliacaoSetor>  avaliacaoSetores;
+
+    @OneToOne(mappedBy = "avaliacaoMensal",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private AvaliacaoTokenLink avaliacaoTokenLink;
+
 }

@@ -38,6 +38,10 @@ public class Resposta {
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
 
+    @ManyToOne
+    @JoinColumn(name = "token_id")
+    private AvaliacaoTokenLink token;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "avaliacao_setor_id",nullable = false)
     private AvaliacaoSetor avaliacaoSetor;

@@ -2,14 +2,15 @@ package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
+import com.gabrielbl.healthaplication.model.AvaliacaoMensal;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
-import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
-import com.gabrielbl.healthaplication.model.AvaliacaoLink;
+import com.gabrielbl.healthaplication.model.AvaliacaoTokenLink;
+import com.gabrielbl.healthaplication.repository.AvaliacaoMensalRepository;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
-import com.gabrielbl.healthaplication.repository.AvaliacaoLinkRepository;
+import com.gabrielbl.healthaplication.repository.AvaliacaoTokenLinkRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,8 +19,6 @@ import org.springframework.stereotype.Service;
 
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 
@@ -33,7 +32,10 @@ public class EmpresaService {
     private EmpresaRepository empresaRepository;
 
     @Autowired
-    private AvaliacaoLinkRepository avaliacaoLinkRepository;
+    private AvaliacaoMensalRepository avaliacaoMensalRepository;
+
+    @Autowired
+    private AvaliacaoTokenLinkRepository avaliacaoTokenLinkRepository;
 
     public void criarEmpresa(RegistrarEmpresaDTO data) {
 
@@ -77,6 +79,8 @@ public class EmpresaService {
                 new EmpresaResponseDTO(a.getId(),a.getCnpj(),a.getNome(),a.getEmail(),a.getTelefone()));
     }
 
+
+    /*
     public String gerarLinkAvaliacao(UUID empresaId, Integer horasExpiracao) {
         Empresa empresa = empresaRepository.findById(empresaId)
                 .orElseThrow(() -> new EntityNotFoundException("Empresa nao encontrada"));
@@ -90,11 +94,12 @@ public class EmpresaService {
                 : null;
 
         // Save the link information in the database
-        AvaliacaoLink avaliacaoLink = new AvaliacaoLink();
-        avaliacaoLink.setEmpresaId(empresaId);
-        avaliacaoLink.setLinkToken(linkToken);
-        avaliacaoLink.setExpiraEm(expiracaoEm);
-        avaliacaoLinkRepository.save(avaliacaoLink);
+        AvaliacaoTokenLink avaliacaoTokenLink = new AvaliacaoTokenLink();
+        AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(empresaId,true);
+        avaliacaoTokenLink.setAvaliacaoMensal(avaliacao);
+        avaliacaoTokenLink.setToken(linkToken);
+        avaliacaoTokenLink.setDataExpiracao(expiracaoEm);
+        avaliacaoTokenLinkRepository.save(avaliacaoTokenLink);
 
         // Return the generated link
         return "https://cuidarmais.com/avaliacao/" + linkToken;
@@ -103,6 +108,8 @@ public class EmpresaService {
 
     }
 
+
+     */
 
     public Empresa getEmpresa(UUID id) {
 
