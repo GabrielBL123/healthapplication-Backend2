@@ -13,17 +13,11 @@ import com.gabrielbl.healthaplication.model.UsuarioFuncao;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import jakarta.servlet.http.Cookie;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,24 +25,25 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-
 public class AutorizacaoService {
 
-    @Lazy
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final JavaMailSender mailSender;
+    private final TokenService tokenService;
+    private final UsuarioRepository usuarioRepository;
+    private final EmpresaRepository empresaRepository;
 
-
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Autowired
-    private TokenService tokenService;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
-    private EmpresaRepository empresaRepository;
+    public AutorizacaoService(@Lazy AuthenticationManager authenticationManager,
+                              JavaMailSender mailSender,
+                              TokenService tokenService,
+                              UsuarioRepository usuarioRepository,
+                              EmpresaRepository empresaRepository) {
+        this.authenticationManager = authenticationManager;
+        this.mailSender = mailSender;
+        this.tokenService = tokenService;
+        this.usuarioRepository = usuarioRepository;
+        this.empresaRepository = empresaRepository;
+    }
 
 
     public LoginResponseDTO autenticarUsuario(AutenticacaoDTO data) {

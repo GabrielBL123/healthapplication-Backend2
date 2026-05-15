@@ -1,4 +1,6 @@
 package com.gabrielbl.healthaplication.model.DTOs;
 
-public record AutenticacaoDTO(String login, String password) {
+import jakarta.validation.constraints.NotBlank;
+
+public record AutenticacaoDTO(@NotBlank String login, @NotBlank String password) {
 }

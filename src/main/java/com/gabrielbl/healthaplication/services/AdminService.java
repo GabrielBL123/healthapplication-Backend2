@@ -8,56 +8,25 @@ import com.gabrielbl.healthaplication.model.Usuario;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
 @Service
 public class AdminService {
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
-    private EmpresaRepository empresaRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-/*
-    public void vincularRhParaEmpresa(String cnpj,String email){
-        Empresa empresa = empresaRepository.findByCnpj(cnpj);
-        if (empresa == null) {
-            throw new NotFoundException("Empresa não encontrada com CNPJ: " + cnpj);
-        }
 
-        Usuario usuario = usuarioRepository.findByLogin(email);
-        if (usuario == null) {
-            throw new NotFoundException("Usuário não encontrado com nome: " + email);
-        }
+    private final UsuarioRepository usuarioRepository;
+    private final EmpresaRepository empresaRepository;
+    private final PasswordEncoder passwordEncoder;
 
-        if (usuario.getEmpresa() != null && usuario.getEmpresa().equals(empresa)) {
-            throw new NotFoundException("Usuário já vinculado a esta empresa");
-        }
-
-        usuario.setEmpresa(empresa);
-        usuarioRepository.save(usuario);
+    public AdminService(UsuarioRepository usuarioRepository,
+                        EmpresaRepository empresaRepository,
+                        PasswordEncoder passwordEncoder) {
+        this.usuarioRepository = usuarioRepository;
+        this.empresaRepository = empresaRepository;
+        this.passwordEncoder = passwordEncoder;
     }
-
-    public void criarRh(RegistrarDTO data){
-
-        if(usuarioRepository.findByLogin(data.login()) != null)
-            throw new AlreadySubmittedException("Usuário ja cadastrado");
-
-
-        //String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
-        Usuario newUsuario = new Usuario(
-                data.login(),data.nome(), encryptedPassword, data.role(),null,data.cargo(),data.tempoDeTrabalho(),data.jornada());
-
-        usuarioRepository.save(newUsuario);
-    }
-
-
- */
     @Transactional
-    public void criarEVincularRhParaEmpresa(RegistrarRhDTO data){
+    public void criarEVincularRhParaEmpresa(RegistrarRhDTO data) {
 
         if(usuarioRepository.findByLogin(data.login()) != null)
             throw new AlreadySubmittedException("Usuário ja cadastrado");
