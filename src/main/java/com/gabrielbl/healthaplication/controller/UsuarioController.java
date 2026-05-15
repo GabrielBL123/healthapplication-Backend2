@@ -2,25 +2,26 @@ package com.gabrielbl.healthaplication.controller;
 
 
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarUsuarioResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.CriarUsuarioDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.UserResponseDTO;
-import com.gabrielbl.healthaplication.model.Usuario;
-import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import com.gabrielbl.healthaplication.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/usuario")
 public class UsuarioController {
 
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
+    public UsuarioController(UserService userService) {
+        this.userService = userService;
+    }
 
 
     @GetMapping
@@ -33,11 +34,9 @@ public class UsuarioController {
 
     // CREATE
     @PostMapping
-    public ResponseEntity<ResponseDTO<?>> createUser(@RequestBody Usuario usuario) {
-
-        userService.createUser(usuario);
-
-        return ResponseEntity.ok().body(new ResponseDTO<>("usuario", null));
+    public ResponseEntity<ResponseDTO<?>> createUser(@Validated @RequestBody CriarUsuarioDTO data) {
+        userService.createUser(data);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("usuario criado", null));
     }
 
 

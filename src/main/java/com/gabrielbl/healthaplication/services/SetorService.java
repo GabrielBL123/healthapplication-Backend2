@@ -10,7 +10,6 @@ import com.gabrielbl.healthaplication.model.Usuario;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.SetorRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -20,14 +19,17 @@ import java.util.List;
 @Service
 public class SetorService {
 
-    @Autowired
-    private SetorRepository setorRepository;
+    private final SetorRepository setorRepository;
+    private final EmpresaRepository empresaRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private EmpresaRepository empresaRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    public SetorService(SetorRepository setorRepository,
+                        EmpresaRepository empresaRepository,
+                        UsuarioRepository usuarioRepository) {
+        this.setorRepository = setorRepository;
+        this.empresaRepository = empresaRepository;
+        this.usuarioRepository = usuarioRepository;
+    }
 
     public void criarSetor(RegistrarSetorDTO data, String nomeRh) {
 
@@ -66,11 +68,13 @@ public class SetorService {
     public void atualizarSetor(RegistrarSetorDTO data, String nomeRh) {
 
         Usuario usuario = usuarioRepository.findByLogin(nomeRh);
-        if(usuario == null) throw new NotFoundException("Usuario nao encontrado");
+        if (usuario == null) throw new NotFoundException("Usuario nao encontrado");
 
         Empresa empresa = usuario.getEmpresa();
 
-        Setor setor = setorRepository.findByNomeAndEmpresaCnpj(empresa.getCnpj(), data.setor());
+        // Correct argument order: nome first, then cnpj (matching repository method signature)
+        Setor setor = setorRepository.findByNomeAndEmpresaCnpj(data.setor(), empresa.getCnpj());
+        if (setor == null) throw new NotFoundException("Setor nao encontrado");
 
         setorRepository.save(setor);
     }

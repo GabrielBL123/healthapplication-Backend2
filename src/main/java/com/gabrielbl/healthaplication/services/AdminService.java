@@ -2,7 +2,7 @@ package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarAdminDTO;
-import com.gabrielbl.healthaplication.model.DTOs.RegistrarRhEEmpresaDTO;
+import com.gabrielbl.healthaplication.model.DTOs.RegistrarRhDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Usuario;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
@@ -57,7 +57,7 @@ public class AdminService {
 
  */
     @Transactional
-    public void criarEVincularRhParaEmpresa(RegistrarRhEEmpresaDTO data){
+    public void criarEVincularRhParaEmpresa(RegistrarRhDTO data){
 
         if(usuarioRepository.findByLogin(data.login()) != null)
             throw new AlreadySubmittedException("Usuário ja cadastrado");

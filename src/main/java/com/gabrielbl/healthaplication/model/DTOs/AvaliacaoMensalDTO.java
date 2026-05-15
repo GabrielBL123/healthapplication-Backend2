@@ -1,4 +1,6 @@
 package com.gabrielbl.healthaplication.model.DTOs;
 
-public record AvaliacaoMensalDTO(String competencia, String cnpj) {
+import jakarta.validation.constraints.NotBlank;
+
+public record AvaliacaoMensalDTO(@NotBlank String competencia, @NotBlank String cnpj) {
 }

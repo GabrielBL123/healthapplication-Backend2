@@ -4,30 +4,18 @@ package com.gabrielbl.healthaplication.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
-
-import jakarta.validation.constraints.NotBlank;
-import org.springframework.lang.Nullable;
-
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 
 @Entity
-@Table(name = "avaliacao_mensal"/*, uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"usuario_id", "competencia"})
-}
-*/
-)
+@Table(name = "avaliacao_mensal")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class AvaliacaoMensal {
 
     @Id
@@ -35,7 +23,7 @@ public class AvaliacaoMensal {
     private UUID id;
 
     @Column(nullable = false)
-    private String competencia; //2026-03
+    private String competencia;
 
     private LocalDateTime createdAt;
 
