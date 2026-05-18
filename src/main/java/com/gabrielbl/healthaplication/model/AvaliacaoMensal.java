@@ -39,6 +39,10 @@ public class AvaliacaoMensal {
     @OneToMany(mappedBy = "avaliacaoMensal",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<AvaliacaoSetor>  avaliacaoSetores;
 
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    private List<Usuario> usuarios;
+
     @OneToOne(mappedBy = "avaliacaoMensal",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private AvaliacaoTokenLink avaliacaoTokenLink;
 

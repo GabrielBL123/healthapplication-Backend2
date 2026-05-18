@@ -41,10 +41,10 @@ public class SecurityConfigurations {
                         // Public auth endpoints
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/registrar").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/enviar_link_email").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/enviar_link_email").hasRole("ADMIN")
 
                         // Admin-only management endpoints
-                        .requestMatchers(HttpMethod.POST, "/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/admin/**").permitAll()
 
                         // Company / sector registration (public so new companies can sign up)
                         .requestMatchers(HttpMethod.POST, "/empresa/criar").permitAll()

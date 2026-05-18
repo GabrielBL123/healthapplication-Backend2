@@ -1,5 +1,6 @@
 package com.gabrielbl.healthaplication.repository;
 
+import com.gabrielbl.healthaplication.model.AvaliacaoMensal;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Usuario;
 import org.springframework.data.domain.Page;
@@ -13,6 +14,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
     Usuario findByLogin(String login);
     List<Usuario> findBySetorId(UUID setorId);
     Usuario findByLoginAndEmpresa(String login, Empresa empresa);
+
+    Page<Usuario> findByAvaliacaoMensal(AvaliacaoMensal avaliacaoMensal, Pageable pageable);
 
 
 }

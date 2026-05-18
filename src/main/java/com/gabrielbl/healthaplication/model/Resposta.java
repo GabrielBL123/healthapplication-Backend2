@@ -36,7 +36,7 @@ public class Resposta {
     @JoinColumn(name = "avaliacao_setor_id", nullable = false)
     private AvaliacaoSetor avaliacaoSetor;
 
-    @Column(length = 27, nullable = false)
+    @Column(length = 52, nullable = false)
     @Min(1)
     @Max(5)
     private List<Integer> valores;

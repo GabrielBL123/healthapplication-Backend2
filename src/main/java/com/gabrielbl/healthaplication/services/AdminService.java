@@ -1,6 +1,8 @@
 package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
+import com.gabrielbl.healthaplication.exception.NotFoundException;
+import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarAdminDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarRhEEmpresaDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
@@ -9,8 +11,12 @@ import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -87,6 +93,25 @@ public class AdminService {
                 data.login(),data.nome(), encryptedPassword, data.role(),null,null,null,null);
 
         usuarioRepository.save(newUsuario);
+    }
+
+    public Page<RegistrarAdminDTO> getAll(Pageable pageable) {
+
+        Page<Usuario> admins = usuarioRepository.findAll(pageable);
+
+        return admins.map(a ->
+                new RegistrarAdminDTO(a.getId(),a.getLogin(),a.getNome(),a.getRole()));
+    }
+
+
+    public void deletarAdmin(String login) {
+
+        Usuario usuario = usuarioRepository.findByLogin(login);
+        if(usuario != null)
+            usuarioRepository.delete(usuario);
+        else throw new NotFoundException("Admin nao encontrado");
+
+
     }
 }
 

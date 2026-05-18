@@ -26,7 +26,7 @@ public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    @Column
+    @Column(nullable = false, unique = true)
     private String login;
 
     @Column(nullable = false)
@@ -48,6 +48,10 @@ public class Usuario implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "empresa_id")
     private Empresa empresa;
+
+    @ManyToOne
+    @JoinColumn(name = "avaliacao_mensal_id")
+    private AvaliacaoMensal avaliacaoMensal;
 
 
 

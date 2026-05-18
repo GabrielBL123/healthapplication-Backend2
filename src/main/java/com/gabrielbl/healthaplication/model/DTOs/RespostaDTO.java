@@ -14,5 +14,5 @@ public record RespostaDTO(@NotBlank String nome,
                           @NotBlank String setor,
                           @NotNull LocalDateTime tempoDeTrabalho,
                           @NotNull Duration jornada,
-                          @NotNull @Size(min = 27, max = 27) int[] resposta) {
+                          @NotNull @Size(min = 52, max = 52) int[] resposta) {
 }

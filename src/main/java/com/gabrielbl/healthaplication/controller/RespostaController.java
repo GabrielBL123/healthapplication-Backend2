@@ -1,11 +1,14 @@
 package com.gabrielbl.healthaplication.controller;
 
 
-import com.gabrielbl.healthaplication.model.DTOs.GerarLinkDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RespostaDTO;
+import com.gabrielbl.healthaplication.model.DTOs.ListaRespostaDTO;
+import com.gabrielbl.healthaplication.model.DTOs.RespostaInfoEmpresaDTO;
 import com.gabrielbl.healthaplication.services.RespostaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +19,30 @@ public class RespostaController {
 
     @Autowired
     private RespostaService respostaService;
+
+
+
+    /// RETORNA UM PAGE DAS INFORMACOES DAS PESSOAS Q RESPONDERAM O QUESTIONARIO ATIVO DA EMPRESA
+    @GetMapping("/{empresa-id}")
+    public ResponseEntity<ResponseDTO<Page<ListaRespostaDTO>>> getTodosQResponderam(@PathVariable String empresaId, Pageable pageable){
+
+        Page<ListaRespostaDTO> respostaData = respostaService.getAllRespostaInfo(empresaId,pageable);
+
+       return ResponseEntity.ok((new  ResponseDTO<>("",respostaData)));
+
+    }
+
+    /// INCOMPLETO
+
+    @GetMapping("/{token-id}")
+    private ResponseEntity<ResponseDTO<RespostaInfoEmpresaDTO>> getRespostaInfo(@PathVariable String tokenId){
+
+        RespostaInfoEmpresaDTO data = respostaService.getRespostaInfoEmpresa(tokenId);
+
+        return ResponseEntity.ok(new ResponseDTO<>("",null));
+    }
+
+    /// INCOMPLETO
 
     @PostMapping("/{token-id}")
     private ResponseEntity<ResponseDTO<?>> submeterResposta(@PathVariable("token-id") String token,

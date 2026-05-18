@@ -6,6 +6,8 @@ import com.gabrielbl.healthaplication.model.DTOs.RegistrarRhEEmpresaDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +23,13 @@ public class AdminController {
     }
 
 
+    @GetMapping
+    public ResponseEntity<ResponseDTO<Page<RegistrarAdminDTO>>> getAllAdmin(Pageable pageable) {
+
+        Page<RegistrarAdminDTO> admins = adminService.getAll(pageable);
+
+        return ResponseEntity.ok(new ResponseDTO<>("",admins));
+    }
 
     @PostMapping("/criar-rh-empresa")
     ResponseEntity<ResponseDTO<RegistrarRhEEmpresaDTO>> criarRHEmpresa(@RequestBody @Validated RegistrarRhEEmpresaDTO data) {
@@ -37,6 +46,17 @@ public class AdminController {
         adminService.criarAdmin(data);
 
         return ResponseEntity.ok(new ResponseDTO<>("Admin criado com sucesso", data));
+    }
+
+    @DeleteMapping()
+    ResponseEntity<ResponseDTO<RegistrarAdminDTO>> deletarAdmin(@RequestParam String login){
+
+
+
+        adminService.deletarAdmin(login);
+
+
+        return ResponseEntity.ok(new ResponseDTO<>("Usuario deletado com sucesso",null));
     }
 
 
