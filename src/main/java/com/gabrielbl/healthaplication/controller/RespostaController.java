@@ -22,7 +22,7 @@ public class RespostaController {
 
 
 
-    /// RETORNA UM PAGE DAS INFORMACOES DAS PESSOAS Q RESPONDERAM O QUESTIONARIO ATIVO DA EMPRESA
+    //Retorna todos os funcionários que responderam à avaliação ativa de determinada empresa(pelo ID da empresa informado)
     @GetMapping("/{empresa-id}")
     public ResponseEntity<ResponseDTO<Page<ListaRespostaDTO>>> getTodosQResponderam(@PathVariable String empresaId, Pageable pageable){
 
@@ -32,7 +32,7 @@ public class RespostaController {
 
     }
 
-    /// INCOMPLETO
+    //Incompleto
 
     @GetMapping("/{token-id}")
     private ResponseEntity<ResponseDTO<RespostaInfoEmpresaDTO>> getRespostaInfo(@PathVariable String tokenId){
@@ -42,7 +42,7 @@ public class RespostaController {
         return ResponseEntity.ok(new ResponseDTO<>("",null));
     }
 
-    /// INCOMPLETO
+    //Incompleto
 
     @PostMapping("/{token-id}")
     private ResponseEntity<ResponseDTO<?>> submeterResposta(@PathVariable("token-id") String token,

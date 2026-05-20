@@ -25,19 +25,17 @@ public class AvaliacaoMensalController {
     }
 
 
-    /**
-     * Criar questionario
-     */
 
 
 
-    @GetMapping
+
+    @GetMapping //Retorna todas as avaliacoes
     public ResponseEntity<ResponseDTO<Page<AvaliacaoMensalResponseDTO>>>  getAllAvaliacoesMensal(Pageable pageable){
         Page<AvaliacaoMensalResponseDTO> avaliacoes = avaliacaoService.getAll(pageable);
         return ResponseEntity.ok(new ResponseDTO<>("Lista de todas as avaliacoes",avaliacoes));
     }
 
-    @GetMapping("/{empresa-id}")
+    @GetMapping("/{empresa-id}")  //Retorna todas as avaliacoes de determinada empresa(pelo seu ID)
     public ResponseEntity<ResponseDTO<Page<AvaliacaoMensalResponseDTO>>> getAllAvaliacoesMensaisInEmpresa(
             @PathVariable("empresa-id") UUID empresa_id,
             Pageable pageable){
@@ -46,7 +44,7 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("Lista de todas as avaliacoes da empresa",avaliacoes));
     }
 
-    @GetMapping("/gerar-link")
+    @GetMapping("/gerar-link")  //Gera um link do questionario para o Rh enviar aos funcionarios
     private ResponseEntity<ResponseDTO<?>> gerarLink(@Validated @RequestBody GerarLinkDTO data) {
 
         String link = avaliacaoService.gerarLinkAvaliacao(data.cnpj(), data.horasValidade());
@@ -56,7 +54,7 @@ public class AvaliacaoMensalController {
 
 
 
-    @PostMapping("/iniciar")
+    @PostMapping("/iniciar") //Cria e inicia uma avaliacao
     public ResponseEntity<ResponseDTO<?>> iniciarAvaliacaoMensal(@Validated @RequestBody AvaliacaoMensalDTO data) {
 
 
@@ -66,7 +64,7 @@ public class AvaliacaoMensalController {
     }
 
 
-    @PostMapping("/finalizar")
+    @PostMapping("/finalizar")//Finaliza uma avaliacao
     public ResponseEntity<ResponseDTO<?>> finalizarAvaliacaoMensal(@Validated @RequestBody AvaliacaoMensalDTO data) {
 
         avaliacaoService.finalizarAvaliacaoMensal(data);
@@ -76,7 +74,7 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal de "+ data.competencia() +" finalizada com sucesso",null));
     }
 
-    @PostMapping("/deletar")
+    @PostMapping("/deletar")//Deleta uma avaliacao
     public ResponseEntity<ResponseDTO<?>> deletarAvaliacaoMensal(@Validated @RequestBody AvaliacaoMensalDTO data){
 
         avaliacaoService.deletarAvaliacaoMensal(data);

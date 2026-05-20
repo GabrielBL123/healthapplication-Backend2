@@ -26,7 +26,7 @@ public class EmpresaController {
     }
 
 
-    @GetMapping
+    @GetMapping //Retorna todas as empresas
     public ResponseEntity<ResponseDTO<Page<EmpresaResponseDTO>>> getAllEmpresas(Pageable pageable) {
 
         Page<EmpresaResponseDTO> empresas = empresaService.getAllEmpresas(pageable);
@@ -34,20 +34,20 @@ public class EmpresaController {
     }
 
 
-    @PostMapping("/criar")
+    @PostMapping("/criar") //Cria uma empresa
     public ResponseEntity<ResponseDTO<?>> criarEmpresa(@Validated @RequestBody RegistrarEmpresaDTO data){
         empresaService.criarEmpresa(data);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("Empresa criada com sucesso", null));
     }
 
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}") //Atualiza uma empresa(pelo seu ID)
     public ResponseEntity<ResponseDTO<?>> atualizarEmpresa(@PathVariable UUID id, @Validated @RequestBody AtualizarEmpresaDTO data){
         empresaService.atualizarEmpresa(id, data);
         return ResponseEntity.ok(new ResponseDTO<>("Empresa atualizada com sucesso", null));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}") //Deleta uma empresa(pelo seu ID)
     public ResponseEntity<ResponseDTO<?>> deletarEmpresa(@PathVariable UUID id){
         empresaService.deletarEmpresa(id);
         return ResponseEntity.ok(new ResponseDTO<>("Empresa removida com sucesso", null));

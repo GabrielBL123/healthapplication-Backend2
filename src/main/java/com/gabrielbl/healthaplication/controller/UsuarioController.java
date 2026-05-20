@@ -24,7 +24,7 @@ public class UsuarioController {
     }
 
 
-    @GetMapping
+    @GetMapping //Retorna todos os usuarios(Admin, Rh, Usuario padrão/Funcionário)
     public ResponseEntity<ResponseDTO<Page<UserResponseDTO>>> getAllUsers(Pageable pageable) {
 
         Page<UserResponseDTO> usuarios =  userService.getAllUsuarios(pageable);
@@ -33,7 +33,7 @@ public class UsuarioController {
     }
 
     // CREATE
-    @PostMapping
+    @PostMapping //Cria um usuario(podendo ser admin, rh ou funcionário padrão, dependendo da Role informada no JSON)
     public ResponseEntity<ResponseDTO<?>> createUser(@Validated @RequestBody CriarUsuarioDTO data) {
         userService.createUser(data);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("usuario criado", null));
@@ -43,7 +43,7 @@ public class UsuarioController {
 
 
     // READ ONE
-    @GetMapping("/{id}")
+    @GetMapping("/{id}") //Retorna as informants de um usuario pelo ID informado
     public ResponseEntity<ResponseDTO<UserResponseDTO>> getUserById(@PathVariable String id) {
 
         UserResponseDTO usuario = userService.getUserById(id);
@@ -52,7 +52,7 @@ public class UsuarioController {
     }
 
     // UPDATE
-    @PutMapping("/{id}")
+    @PutMapping("/{id}") //Atualiza o usuario pelo id informado
     public ResponseEntity<ResponseDTO<UserResponseDTO>> updateUser(@PathVariable String id,
                                                                    @RequestBody AtualizarUsuarioResponseDTO novosDados) {
         UserResponseDTO usuario = userService.updateUser(id, novosDados);
@@ -61,7 +61,7 @@ public class UsuarioController {
     }
 
     // DELETE
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}") //Deleta o usuario pelo id informado
     public ResponseEntity<ResponseDTO<?>> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return ResponseEntity.ok().body(new ResponseDTO<>("usuario deletado", null));

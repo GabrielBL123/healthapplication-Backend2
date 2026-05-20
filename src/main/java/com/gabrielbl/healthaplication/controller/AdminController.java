@@ -23,15 +23,15 @@ public class AdminController {
     }
 
 
-    @GetMapping
+    @GetMapping //Retorna todos os admins
     public ResponseEntity<ResponseDTO<Page<RegistrarAdminDTO>>> getAllAdmin(Pageable pageable) {
 
         Page<RegistrarAdminDTO> admins = adminService.getAll(pageable);
 
-        return ResponseEntity.ok(new ResponseDTO<>("",admins));
+        return ResponseEntity.ok(new ResponseDTO<>("Todos os admins: ",admins));
     }
 
-    @PostMapping("/criar-rh-empresa")
+    @PostMapping("/criar-rh-empresa") //Cria Rh e empresa em uma unica requisição
     ResponseEntity<ResponseDTO<RegistrarRhEEmpresaDTO>> criarRHEmpresa(@RequestBody @Validated RegistrarRhEEmpresaDTO data) {
 
         adminService.criarEVincularRhParaEmpresa(data);
@@ -40,7 +40,7 @@ public class AdminController {
 
     }
 
-    @PostMapping("/criar_admin")
+    @PostMapping("/criar-admin") //Cria uma conta admin
     ResponseEntity<ResponseDTO<RegistrarAdminDTO>> criarAdmin(@RequestBody @Validated RegistrarAdminDTO data) {
 
         adminService.criarAdmin(data);
@@ -48,7 +48,7 @@ public class AdminController {
         return ResponseEntity.ok(new ResponseDTO<>("Admin criado com sucesso", data));
     }
 
-    @DeleteMapping()
+    @DeleteMapping() //Deleta uma conta admin
     ResponseEntity<ResponseDTO<RegistrarAdminDTO>> deletarAdmin(@RequestParam String login){
 
 
