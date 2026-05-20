@@ -117,14 +117,14 @@ public class AutorizacaoService {
         //Dispara o e-mail
         try {
 
-            String linkSistema = "http://localhost:5173/completar-cadastro?email=" + java.net.URLEncoder.encode(emailFuncionario, "UTF-8");
+            String linkSistema = "http://localhost:5173/login";
 
             org.springframework.mail.SimpleMailMessage email = new org.springframework.mail.SimpleMailMessage();
             email.setTo(emailFuncionario);
             email.setSubject("Convite para o Sistema Cuida+");
             email.setText("Olá!\n\n" +
-                    "Você foi convidado pelo RH para acessar o Sistema Cuida+ da sua empresa.\n" +
-                    "Para criar a sua senha e completar o seu cadastro, clique no link abaixo:\n\n" +
+                    "Você foi convidado para acessar login.\n" +
+                    "Clique no link abaixo:\n\n" +
                     linkSistema + "\n\n" +
                     "Seja bem-vindo(a)!");
 
