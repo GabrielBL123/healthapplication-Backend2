@@ -71,7 +71,7 @@ public class AdminService {
         if(empresaRepository.findByCnpj(data.cnpj()) != null)
             throw new AlreadySubmittedException("CNPJ ja cadastrado");
 
-        Empresa empresa = new Empresa(data.cnpj(),data.nomeEmpresa(),data.emailEmpresa(),null);
+        Empresa empresa = new Empresa(data.cnpj(),data.nomeEmpresa(),data.emailEmpresa(), data.telefoneEmpresa());
         empresaRepository.save(empresa);
 
 
