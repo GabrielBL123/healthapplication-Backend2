@@ -80,7 +80,6 @@ public class Usuario implements UserDetails {
         return switch (this.role) {
             case ADMIN -> List.of(
                     new SimpleGrantedAuthority("ROLE_ADMIN"),
-                    new SimpleGrantedAuthority("ROLE_RH"),
                     new SimpleGrantedAuthority("ROLE_USER")
             );
             case RH -> List.of(
