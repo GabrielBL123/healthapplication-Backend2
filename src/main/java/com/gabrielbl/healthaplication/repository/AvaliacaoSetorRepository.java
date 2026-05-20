@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.UUID;
 
 public interface AvaliacaoSetorRepository extends JpaRepository<AvaliacaoSetor, UUID> {
-    AvaliacaoSetor findBySetorNomeAndAvaliacaoMensal(String nome, AvaliacaoMensal avaliacaoMensal);
+    AvaliacaoSetor findBySetorNomeAndAvaliacaoMensal(String nomeSetor, AvaliacaoMensal avaliacaoMensal);
 }

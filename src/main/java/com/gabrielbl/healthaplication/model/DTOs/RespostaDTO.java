@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 
 public record RespostaDTO(@NotBlank String nome,
                           @NotBlank String login,
-                          @NotBlank String password,
                           @NotBlank String cargo,
                           @NotBlank String setor,
                           @NotNull LocalDateTime tempoDeTrabalho,

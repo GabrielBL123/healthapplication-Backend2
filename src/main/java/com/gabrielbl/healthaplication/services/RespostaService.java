@@ -27,7 +27,7 @@ public class RespostaService {
     private AvaliacaoMensalRepository avaliacaoMensalRepository;
 
     @Autowired
-    private AvaliacaoTokenLinkRepository avaliacaoTokenLinkRepository;
+    private SetorRepository setorRepository;
 
     @Autowired
     private EmpresaRepository empresaRepository;
@@ -61,6 +61,8 @@ public class RespostaService {
         usuario.setNome(data.nome());
         usuario.setRole(UsuarioFuncao.USER);
         usuario.setLogin(data.login());
+        usuario.setCargo(data.cargo());
+        usuario.setSetor(setorRepository.findByNomeAndEmpresaCnpj(data.setor(), avaliacao.getEmpresa().getCnpj()));
         usuario.setTempoDeTrabalho(data.tempoDeTrabalho());
         usuario.setJornada(data.jornada());
         usuario.setEmpresa(avaliacao.getEmpresa());
@@ -76,7 +78,7 @@ public class RespostaService {
         resposta.setValores(valores);
         resposta.setToken(tokenLink);
         resposta.setCreatedAt(LocalDateTime.now());
-        AvaliacaoSetor avaliacaoSetor = avaliacaoSetorRepository.findBySetorNomeAndAvaliacaoMensal(data.nome(), avaliacao);
+        AvaliacaoSetor avaliacaoSetor = avaliacaoSetorRepository.findBySetorNomeAndAvaliacaoMensal(data.setor(), avaliacao);
         if(avaliacaoSetor==null)
             throw new NotFoundException("Avaliacao setor nao encontrada");
         resposta.setAvaliacaoSetor(avaliacaoSetor);
