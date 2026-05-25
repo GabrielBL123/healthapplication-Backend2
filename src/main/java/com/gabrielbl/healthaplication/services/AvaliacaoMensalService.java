@@ -1,6 +1,7 @@
 package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
+import com.gabrielbl.healthaplication.exception.BusinessException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalDTO;
@@ -15,7 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -43,11 +46,18 @@ public class AvaliacaoMensalService {
 
 
 
+        competenciaVencida(data.competencia());
+
         Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
+
+
+        if(empresa==null){
+            throw new NotFoundException("Empresa nao encontrada");
+        }
 
         if((avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(
                 data.competencia(), empresa.getId(),true)!=null)){
-            throw new AlreadySubmittedException("Avaliacao Mensal ja existente e ativa nessa empresa");
+            throw new AlreadySubmittedException("Avaliacao Mensal ja ativa nessa empresa");
         }
 
 
@@ -64,7 +74,7 @@ public class AvaliacaoMensalService {
             AvaliacaoSetor avaliacaoSetor = new AvaliacaoSetor();
             avaliacaoSetor.setSetor(Setor);
             avaliacaoSetor.setAvaliacaoMensal(avaliacaoMensal);
-                //avaliacaoSetorRepository.save(avaliacaoSetor);
+            avaliacaoSetorRepository.save(avaliacaoSetor);
             setores.add(avaliacaoSetor);
         }
 
@@ -84,11 +94,11 @@ public class AvaliacaoMensalService {
         Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
         if(empresa ==null) throw new NotFoundException("Empresa nao encontrada");
 
-        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(data.competencia(), empresa.getId(),true   );
+        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(data.competencia(), empresa.getId(),true);
         if(avaliacaoMensal.getIsActive()==false) throw new NotFoundException("Avaliacao Mensal ativa nao existente");
 
         avaliacaoMensal.setIsActive(false);
-
+        avaliacaoMensal.setSubmittedAt(LocalDateTime.now());
 
 
 
@@ -101,6 +111,7 @@ public class AvaliacaoMensalService {
 
         AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByCompetenciaAndEmpresaId(data.competencia(), empresa.getId());
         if(avaliacaoMensal ==null) throw new NotFoundException("Avaliacao Mensal nao encontrada");
+
         avaliacaoMensalRepository.delete(avaliacaoMensal);
 
     }
@@ -112,7 +123,7 @@ public class AvaliacaoMensalService {
         Page<AvaliacaoMensal> page = avaliacaoMensalRepository.findAll(pageable);
 
         return page.map(a ->
-                        new AvaliacaoMensalResponseDTO(a.getId(),a.getCompetencia(),a.getIsActive()));
+                        new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getCompetencia(),a.getIsActive()));
     }
 
     public Page<AvaliacaoMensalResponseDTO> getEmpresaAvaliacoes(Pageable pageable,UUID empresaId) {
@@ -123,7 +134,7 @@ public class AvaliacaoMensalService {
         Page<AvaliacaoMensal> page =  avaliacaoMensalRepository.findByEmpresa(empresa,pageable);
 
         return page.map(a ->
-                new AvaliacaoMensalResponseDTO(a.getId(),a.getCompetencia(),a.getIsActive()));
+                new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getCompetencia(),a.getIsActive()));
     }
 
     public String gerarLinkAvaliacao(String cnpj, Integer horasExpiracao) {
@@ -153,5 +164,21 @@ public class AvaliacaoMensalService {
 
 
 
+    }
+
+
+
+
+    private void competenciaVencida(String competencia) {
+
+        if (competencia == null || !competencia.matches("\\d{8}")) {
+            throw new IllegalArgumentException("competencia deve ser no formato YYYYMMDD");
+        }
+
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        LocalDate dataCompetencia = LocalDate.parse(competencia, formatter);
+
+        if (dataCompetencia.isAfter(LocalDate.now())) throw new  IllegalArgumentException("data invalida");
     }
 }

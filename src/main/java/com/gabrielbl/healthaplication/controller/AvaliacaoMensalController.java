@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/avaliacoes-mensais")
+@RequestMapping("/avaliacoes-mensais")  /// AAAAMMDD
 public class AvaliacaoMensalController {
 
     private final AvaliacaoMensalService avaliacaoService;
