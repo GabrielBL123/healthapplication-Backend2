@@ -64,7 +64,16 @@ public class SetorController {
         return ResponseEntity.ok(new ResponseDTO<>("Setor atualizado com sucesso", null));
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseDTO<?>> deletarSetor(
+            @PathVariable UUID id,
+            Authentication authentication) {
 
+        // Se quiser, você pode usar o authentication aqui para validar se o usuário tem permissão
+        setorService.deletarSetor(id);
+
+        return ResponseEntity.ok(new ResponseDTO<>("Setor deletado com sucesso", null));
+    }
 
 
 
