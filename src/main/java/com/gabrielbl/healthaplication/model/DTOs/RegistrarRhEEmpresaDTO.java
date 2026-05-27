@@ -10,5 +10,6 @@ public record RegistrarRhEEmpresaDTO(@NotBlank String nome, @NotBlank  String lo
                                      @NotBlank String password, @NotNull UsuarioFuncao role,
                                      @NotBlank @Pattern(regexp = "\\d{14}")  String cnpj,
                                      @NotBlank String nomeEmpresa,
+                                     @NotBlank String telefoneEmpresa,
                                      @NotBlank String emailEmpresa) {
 }
