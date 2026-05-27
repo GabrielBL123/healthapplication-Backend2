@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -104,15 +105,16 @@ public class AvaliacaoMensalService {
 
     }
 
-    public void deletarAvaliacaoMensal(AvaliacaoMensalDTO data) {
+    public void deletarAvaliacaoMensal(String id) {
 
-        Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
-        if(empresa ==null) throw new NotFoundException("Empresa nao encontrada");
+        AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findById(UUID.fromString(id))
+                .orElseThrow(() -> new NotFoundException("Avaliacao nao encontrada"));
 
-        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByCompetenciaAndEmpresaId(data.competencia(), empresa.getId());
-        if(avaliacaoMensal ==null) throw new NotFoundException("Avaliacao Mensal nao encontrada");
+        Empresa empresa =  empresaRepository.findByCnpj(avaliacao.getEmpresa().getCnpj());
+        if(empresa==null) throw new NotFoundException("Empresa nao encontrada");
 
-        avaliacaoMensalRepository.delete(avaliacaoMensal);
+
+        avaliacaoMensalRepository.delete(avaliacao);
 
     }
 

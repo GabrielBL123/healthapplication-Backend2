@@ -1,10 +1,7 @@
 package com.gabrielbl.healthaplication.controller;
 
 
-import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalDTO;
-import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
-import com.gabrielbl.healthaplication.model.DTOs.GerarLinkDTO;
-import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.*;
 import com.gabrielbl.healthaplication.services.AvaliacaoMensalService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +41,13 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("Lista de todas as avaliacoes da empresa",avaliacoes));
     }
 
+    @GetMapping("/{avaliacaoId}") //Retorna As informaçoes de uma avaliacao, como id, competencia, funcionarios, Av.setores, entre outros.
+    public ResponseEntity<ResponseDTO<AvaliacaoMensalComSetoresResponseDTO>> getAvaliacao(@PathVariable String avaliacaoId){
+
+
+        return ResponseEntity.ok(new ResponseDTO<>("",null));
+    }
+
     @GetMapping("/gerar-link")  //Gera um link do questionario para o Rh enviar aos funcionarios
     private ResponseEntity<ResponseDTO<?>> gerarLink(@Validated @RequestBody GerarLinkDTO data) {
 
@@ -74,10 +78,10 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal de "+ data.competencia() +" finalizada com sucesso",null));
     }
 
-    @PostMapping("/deletar")//Deleta uma avaliacao
-    public ResponseEntity<ResponseDTO<?>> deletarAvaliacaoMensal(@Validated @RequestBody AvaliacaoMensalDTO data){
+    @DeleteMapping("/{id}")//Deleta uma avaliacao
+    public ResponseEntity<ResponseDTO<?>> deletarAvaliacaoMensal(@PathVariable String id){
 
-        avaliacaoService.deletarAvaliacaoMensal(data);
+        avaliacaoService.deletarAvaliacaoMensal(id);
 
         return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal deletada com sucesso",null));
     }
