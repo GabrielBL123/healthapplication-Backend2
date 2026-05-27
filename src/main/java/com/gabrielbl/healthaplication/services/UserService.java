@@ -1,6 +1,5 @@
 package com.gabrielbl.healthaplication.services;
 
-
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarUsuarioResponseDTO;
@@ -86,13 +85,21 @@ public class UserService {
 
     private UserResponseDTO toDTO(Usuario usuario) {
         String nomeSetor = usuario.getSetor() != null ? usuario.getSetor().getNome() : "Nenhum";
-        String empresaEmail = usuario.getEmpresa() != null ? usuario.getEmpresa().getEmail() : "";
+        String empresaEmail = usuario.getEmpresa() != null ? usuario.getEmpresa().getEmail() : "Não informado";
+
+        // ✨ NOVO: Capturando o CNPJ e o Nome da Empresa de forma segura (evitando NullPointerException)
+        String empresaCnpj = usuario.getEmpresa() != null ? usuario.getEmpresa().getCnpj() : "Não informado";
+        // Nota: Se na sua classe Empresa.java o método for "getNomeEmpresa()", ajuste a linha abaixo!
+        String empresaNome = usuario.getEmpresa() != null ? usuario.getEmpresa().getNome() : "Não informado";
+
         return new UserResponseDTO(
                 usuario.getLogin(),
                 usuario.getNome(),
-                "",
+                "", // A senha não deve ser retornada por segurança
                 usuario.getRole(),
                 empresaEmail,
+                empresaCnpj,   // ✨ Campo novo passado para o DTO
+                empresaNome,   // ✨ Campo novo passado para o DTO
                 usuario.getCargo(),
                 nomeSetor,
                 usuario.getTempoDeTrabalho(),

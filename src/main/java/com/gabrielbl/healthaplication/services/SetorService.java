@@ -14,7 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.util.UUID;
 
 @Service
 public class SetorService {
@@ -54,14 +54,17 @@ public class SetorService {
     }
 
 
-    public void deletarSetor(RegistrarSetorDTO data) {
+    public void deletarSetor(UUID id) {
+        // Busca o setor diretamente pelo ID que veio da URL do React
+        Setor setor = setorRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Setor nao encontrado"));
 
-        Setor setor = setorRepository.findByNomeAndEmpresaCnpj(data.setor(), data.cnpj());
-
-        if(setor == null) throw new NotFoundException("Setor nao encontrado");
-        setorRepository.delete(setor);
-
-
+        try {
+            setorRepository.delete(setor);
+        } catch (Exception e) {
+            // Proteção extra caso o banco bloqueie a exclusão por ter funcionários nesse setor
+            throw new RuntimeException("Não é possível deletar este setor pois ele já está em uso.");
+        }
     }
 
 
