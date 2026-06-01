@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/avaliacoes-mensais")  /// AAAAMMDD
+@RequestMapping("/avaliacoes-mensais")
 public class AvaliacaoMensalController {
 
     private final AvaliacaoMensalService avaliacaoService;
@@ -41,7 +41,7 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("Lista de todas as avaliacoes da empresa",avaliacoes));
     }
 
-    @GetMapping("/{avaliacaoId}") //Retorna As informaçoes de uma avaliacao, como id, competencia, funcionarios, Av.setores, entre outros.
+    @GetMapping("/avaliacao/{avaliacaoId}") //Retorna As informaçoes de uma avaliacao, como id, competencia, funcionarios, Av.setores, entre outros.
     public ResponseEntity<ResponseDTO<AvaliacaoMensalComSetoresResponseDTO>> getAvaliacao(@PathVariable String avaliacaoId){
 
         AvaliacaoMensalComSetoresResponseDTO data = avaliacaoService.getAvaliacao(avaliacaoId);

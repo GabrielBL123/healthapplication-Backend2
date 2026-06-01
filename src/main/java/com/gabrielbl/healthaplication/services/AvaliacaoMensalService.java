@@ -208,9 +208,13 @@ public class AvaliacaoMensalService {
         );
 
 
+
+
+
+
         return new AvaliacaoMensalComSetoresResponseDTO(
                 avaliacaoId,avaliacao.getCompetencia(),avaliacao.getCreatedAt(),
-                avaliacao.getIsActive(), empresaResponseDTO,funcionariosDTO,avaliacao.getAvaliacaoTokenLink().getToken()
+                avaliacao.getIsActive(), empresaResponseDTO,funcionariosDTO
         );
 
     }

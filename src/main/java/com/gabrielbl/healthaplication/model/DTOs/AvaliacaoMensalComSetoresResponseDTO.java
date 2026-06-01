@@ -10,7 +10,6 @@ public record AvaliacaoMensalComSetoresResponseDTO(
         LocalDateTime criadoEm,
         boolean isActive,
         EmpresaResponseDTO empresa,
-        List<FuncionarioDTO> funcionario,
-        String avaliacaoLink
+        List<FuncionarioDTO> funcionario
 ) {
 }
