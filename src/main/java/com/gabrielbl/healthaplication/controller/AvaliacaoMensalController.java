@@ -44,8 +44,8 @@ public class AvaliacaoMensalController {
     @GetMapping("/{avaliacaoId}") //Retorna As informaçoes de uma avaliacao, como id, competencia, funcionarios, Av.setores, entre outros.
     public ResponseEntity<ResponseDTO<AvaliacaoMensalComSetoresResponseDTO>> getAvaliacao(@PathVariable String avaliacaoId){
 
-
-        return ResponseEntity.ok(new ResponseDTO<>("",null));
+        AvaliacaoMensalComSetoresResponseDTO data = avaliacaoService.getAvaliacao(avaliacaoId);
+        return ResponseEntity.ok(new ResponseDTO<>("",data));
     }
 
     @GetMapping("/gerar-link")  //Gera um link do questionario para o Rh enviar aos funcionarios

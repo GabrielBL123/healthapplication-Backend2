@@ -4,9 +4,7 @@ import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.BusinessException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.*;
-import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalDTO;
-import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
-import com.gabrielbl.healthaplication.model.DTOs.GerarLinkDTO;
+import com.gabrielbl.healthaplication.model.DTOs.*;
 import com.gabrielbl.healthaplication.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -182,5 +180,38 @@ public class AvaliacaoMensalService {
         LocalDate dataCompetencia = LocalDate.parse(competencia, formatter);
 
         if (dataCompetencia.isAfter(LocalDate.now())) throw new  IllegalArgumentException("data invalida");
+    }
+
+    public AvaliacaoMensalComSetoresResponseDTO getAvaliacao(String avaliacaoId) {
+
+        AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findById(UUID.fromString(avaliacaoId))
+                .orElseThrow(() -> new NotFoundException("Avaliacao nao encontrada"));
+
+        List<Usuario> funcionarios = avaliacao.getUsuarios();
+
+        List<FuncionarioDTO> funcionariosDTO = funcionarios.stream()
+                .map(a -> new FuncionarioDTO(
+                    a.getLogin(), a.getNome(), a.getSetor().toString(), a.getCargo(),
+                    a.getTempoDeTrabalho(), a.getJornada()
+                ))
+                .toList();
+
+        Empresa empresa = avaliacao.getEmpresa();
+
+        EmpresaResponseDTO empresaResponseDTO = new EmpresaResponseDTO(
+                empresa.getId(),empresa.getCnpj(), empresa.getNome(),
+                empresa.getEmail(), empresa.getTelefone(),
+                empresa.getSetores().stream()
+                        .map(a -> new SetorResponseDTO(a.getId(),a.getNome(),
+                                a.getEmpresa().getId(),a.getEmpresa().getNome()))
+                        .toList()
+        );
+
+
+        return new AvaliacaoMensalComSetoresResponseDTO(
+                avaliacaoId,avaliacao.getCompetencia(),avaliacao.getCreatedAt(),
+                avaliacao.getIsActive(), empresaResponseDTO,funcionariosDTO,avaliacao.getAvaliacaoTokenLink().getToken()
+        );
+
     }
 }

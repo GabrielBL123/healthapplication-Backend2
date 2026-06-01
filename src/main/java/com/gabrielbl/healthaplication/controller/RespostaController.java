@@ -32,8 +32,9 @@ public class RespostaController {
 
     }
 
-    //Incompleto
 
+    //Retorna o cnpj o nome da empresa com o nome dos setores
+    //Sera usado quando o usuario acessar o link e começar a responder o questionario
     @GetMapping("/{token-id}")
     private ResponseEntity<ResponseDTO<RespostaInfoEmpresaDTO>> getRespostaInfo(@PathVariable String tokenId){
 
@@ -42,8 +43,8 @@ public class RespostaController {
         return ResponseEntity.ok(new ResponseDTO<>("",null));
     }
 
-    //Incompleto
 
+    //Quando o usuario envia a sua resposta
     @PostMapping("/{token-id}")
     private ResponseEntity<ResponseDTO<?>> submeterResposta(@PathVariable("token-id") String token,
                                                             @Validated @RequestBody RespostaDTO data) {
