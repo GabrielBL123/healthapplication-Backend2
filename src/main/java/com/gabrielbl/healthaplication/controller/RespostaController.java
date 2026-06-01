@@ -37,10 +37,8 @@ public class RespostaController {
     //Sera usado quando o usuario acessar o link e começar a responder o questionario
     @GetMapping("/{token-id}")
     private ResponseEntity<ResponseDTO<RespostaInfoEmpresaDTO>> getRespostaInfo(@PathVariable String tokenId){
-
         RespostaInfoEmpresaDTO data = respostaService.getRespostaInfoEmpresa(tokenId);
-
-        return ResponseEntity.ok(new ResponseDTO<>("",null));
+        return ResponseEntity.ok(new ResponseDTO<>("", data));
     }
 
 
@@ -48,7 +46,7 @@ public class RespostaController {
     @PostMapping("/{token-id}")
     private ResponseEntity<ResponseDTO<?>> submeterResposta(@PathVariable("token-id") String token,
                                                             @Validated @RequestBody RespostaDTO data) {
-
+        System.out.println("O DTO CHEGOU PERFEITAMENTE: " + data);
         respostaService.submeterResposta(data,token);
 
         return ResponseEntity.ok(new ResponseDTO<>("Resposta submetido com sucesso",null));

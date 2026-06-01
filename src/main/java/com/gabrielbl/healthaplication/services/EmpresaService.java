@@ -95,7 +95,7 @@ public class EmpresaService {
                 empresa.getNome(),
                 empresa.getEmail(),
                 empresa.getTelefone(),
-                listaSetores // ✨ A mágica acontece aqui: os setores vão junto para o React!
+                listaSetores
         );
     }
 }

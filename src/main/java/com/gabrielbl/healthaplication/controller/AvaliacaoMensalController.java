@@ -48,11 +48,15 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("",data));
     }
 
-    @GetMapping("/gerar-link")  //Gera um link do questionario para o Rh enviar aos funcionarios
-    private ResponseEntity<ResponseDTO<?>> gerarLink(@Validated @RequestBody GerarLinkDTO data) {
+    @PostMapping("/gerar-link") //POST pois recebe um JSON
+    public ResponseEntity<ResponseDTO<?>> gerarLink(@Validated @RequestBody GerarLinkDTO data) {
 
-        String link = avaliacaoService.gerarLinkAvaliacao(data.cnpj(), data.horasValidade());
-        return ResponseEntity.ok(new ResponseDTO<>("link gerado com sucesso",link));
+        // O seu service cria o token único no banco de dados e te devolve ele
+        String tokenGerado = avaliacaoService.gerarLinkAvaliacao(data.cnpj(), data.horasValidade());
+        // Ajuste o "localhost:5173" para a porta exata que o seu Vite roda.
+        String linkFrontEnd = "http://localhost:5173/home-screen/" + tokenGerado;
+
+        return ResponseEntity.ok(new ResponseDTO<>("Link gerado com sucesso", linkFrontEnd));
     }
 
 
