@@ -30,7 +30,7 @@ public class AvaliacaoSetor {
     private List<Resposta> resposta = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "avaliacao_mensal_id", nullable = false)
+    @JoinColumn(name = "avaliacao_mensal_id")
     private AvaliacaoMensal avaliacaoMensal;
 
 }

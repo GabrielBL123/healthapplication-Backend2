@@ -23,4 +23,7 @@ public interface AvaliacaoMensalRepository extends JpaRepository<AvaliacaoMensal
 
     AvaliacaoMensal findByEmpresaAndIsActive(Empresa empresa, boolean isActive);
 
+    Optional<AvaliacaoMensal> findFirstByEmpresaAndIsActiveOrderByCreatedAtDesc(Empresa empresa, boolean b);
+
+
 }

@@ -66,7 +66,7 @@ public class AvaliacaoMensalService {
         avaliacaoMensal.setCompetencia(data.competencia());
         avaliacaoMensal.setIsActive(true);
         avaliacaoMensal.setEmpresa(empresa);
-
+        avaliacaoMensal.setCreatedAt(LocalDateTime.now());
 
         List<AvaliacaoSetor> setores = new ArrayList<>();
         for (Setor Setor : empresa.getSetores()){
@@ -78,7 +78,7 @@ public class AvaliacaoMensalService {
         }
 
         avaliacaoMensal.setAvaliacaoSetores(setores);
-        avaliacaoMensal.setCreatedAt(LocalDateTime.now());
+
 
         avaliacaoMensalRepository.save(avaliacaoMensal);
 
@@ -137,33 +137,66 @@ public class AvaliacaoMensalService {
                 new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getCompetencia(),a.getIsActive()));
     }
 
-    public String gerarLinkAvaliacao(String cnpj, Integer horasExpiracao) {
+    public String getLinkAvaliacao(String cnpj) {
+        // 1. Buscar empresa
         Empresa empresa = empresaRepository.findByCnpj(cnpj);
-        if(empresa ==null) throw new NotFoundException("Empresa nao encontrada");
+        if(empresa == null) {
+            throw new NotFoundException("Empresa não encontrada");
+        }
 
-        // Generate a unique link token
-        String linkToken = UUID.randomUUID().toString();
+        // 2. Buscar avaliação ativa
+        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository
+                .findFirstByEmpresaAndIsActiveOrderByCreatedAtDesc(empresa, true)
+                .orElseThrow(() -> new NotFoundException(
+                        "Nenhuma avaliação mensal ativa encontrada para esta empresa"
+                ));
 
-        // Calculate expiry time (optional)
-        LocalDateTime expiracaoEm = horasExpiracao != null
-                ? LocalDateTime.now().plusHours(horasExpiracao)
-                : null;
+        // 3. Buscar token válido existente
+        Optional<AvaliacaoTokenLink> tokenValido = avaliacaoTokenLinkRepository
+                .findFirstByAvaliacaoMensalAndIsActiveOrderByExpiracaoEmDesc(
+                        avaliacaoMensal,
+                        true
+                )
+                .filter(AvaliacaoTokenLink::isValid);
 
-        // Save the link information in the database
-        AvaliacaoTokenLink avaliacaoLink = new AvaliacaoTokenLink();
+        String linkToken;
 
-        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByEmpresaAndIsActive(empresa, true);
+        if(tokenValido.isPresent()) {
+            // Token válido existe, reutilizar
+            linkToken = tokenValido.get().getToken();
+        } else {
+            // Token expirou ou não existe, criar novo
+            linkToken = gerarNovoToken(avaliacaoMensal);
+        }
 
-        avaliacaoLink.setAvaliacaoMensal(avaliacaoMensal);
-        avaliacaoLink.setToken(linkToken);
-        avaliacaoLink.setDataExpiracao(expiracaoEm);
-        avaliacaoTokenLinkRepository.save(avaliacaoLink);
-
-        // Return the generated link
         return "https://cuidarmais.com/avaliacao/" + linkToken;
+    }
 
 
+    private String gerarNovoToken(AvaliacaoMensal avaliacaoMensal) {
+        // 1. Desativar todos os tokens antigos (opcional, mas recomendado)
+        avaliacaoTokenLinkRepository.desativarTodosOsTokens(avaliacaoMensal.getId());
 
+        // 2. Criar novo token
+        String novoToken = UUID.randomUUID().toString();
+
+        AvaliacaoTokenLink novoLink = new AvaliacaoTokenLink();
+        novoLink.setToken(novoToken);
+        novoLink.setAvaliacaoMensal(avaliacaoMensal);
+        novoLink.setExpiracaoEm(LocalDateTime.now().plusDays(5));
+        novoLink.setIsActive(true);
+
+        avaliacaoTokenLinkRepository.save(novoLink);
+
+        return novoToken;
+    }
+
+
+    public AvaliacaoTokenLink validarToken(String token) {
+        return avaliacaoTokenLinkRepository
+                .findByTokenAndIsActive(token, true)
+                .filter(AvaliacaoTokenLink::isValid)
+                .orElseThrow(() -> new BusinessException("Token inválido ou expirado"));
     }
 
 

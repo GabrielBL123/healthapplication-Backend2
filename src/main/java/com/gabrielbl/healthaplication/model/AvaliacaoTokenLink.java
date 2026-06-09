@@ -23,18 +23,23 @@ public class AvaliacaoTokenLink {
     @Column(nullable = false,unique = true)
     private String token;
 
-    private LocalDateTime dataExpiracao;
-    private LocalDateTime dataCriacao;
+    private LocalDateTime expiracaoEm;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn
+    @Column(nullable = false)
+    private LocalDateTime criadoEm =  LocalDateTime.now();
+
+    @Column(nullable = false)
+    private Boolean isActive = true;
+
+
+    @ManyToOne(fetch = FetchType.LAZY,optional = false)
+    @JoinColumn(name = "avaliacao_mensal_id", nullable = false)
     private AvaliacaoMensal avaliacaoMensal;
 
-    @Enumerated(EnumType.STRING)
-    private AvaliacaoStatusToken status = AvaliacaoStatusToken.ATIVO;
 
-    public boolean isValid() {
-        return status == AvaliacaoStatusToken.ATIVO && LocalDateTime.now().isBefore(dataExpiracao);
+    public boolean isValid(){
+        if(!isActive) return false;
+        if(expiracaoEm==null) return true;
+        return expiracaoEm.isAfter(LocalDateTime.now());
     }
-
 }

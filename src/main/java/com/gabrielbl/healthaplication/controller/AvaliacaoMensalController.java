@@ -52,7 +52,7 @@ public class AvaliacaoMensalController {
     public ResponseEntity<ResponseDTO<?>> gerarLink(@Validated @RequestBody GerarLinkDTO data) {
 
         // O seu service cria o token único no banco de dados e te devolve ele
-        String tokenGerado = avaliacaoService.gerarLinkAvaliacao(data.cnpj(), data.horasValidade());
+        String tokenGerado = avaliacaoService.getLinkAvaliacao(data.cnpj());
         // Ajuste o "localhost:5173" para a porta exata que o seu Vite roda.
         String linkFrontEnd = "http://localhost:5173/home-screen/" + tokenGerado;
 
