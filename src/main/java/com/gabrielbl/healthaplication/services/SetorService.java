@@ -2,11 +2,13 @@ package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.BusinessException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
+import com.gabrielbl.healthaplication.model.AvaliacaoSetor;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarSetorDTO;
 import com.gabrielbl.healthaplication.model.DTOs.SetorResponseDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Setor;
 import com.gabrielbl.healthaplication.model.Usuario;
+import com.gabrielbl.healthaplication.repository.AvaliacaoSetorRepository;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.SetorRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
@@ -22,13 +24,17 @@ public class SetorService {
     private final SetorRepository setorRepository;
     private final EmpresaRepository empresaRepository;
     private final UsuarioRepository usuarioRepository;
+    private final AvaliacaoSetorRepository avaliacaoSetorRepository;
 
     public SetorService(SetorRepository setorRepository,
                         EmpresaRepository empresaRepository,
-                        UsuarioRepository usuarioRepository) {
+                        UsuarioRepository usuarioRepository,
+                        AvaliacaoSetorRepository avaliacaoSetorRepository
+                        ) {
         this.setorRepository = setorRepository;
         this.empresaRepository = empresaRepository;
         this.usuarioRepository = usuarioRepository;
+        this.avaliacaoSetorRepository = avaliacaoSetorRepository;
     }
 
     public void criarSetor(RegistrarSetorDTO data, String nomeRh) {
@@ -51,6 +57,10 @@ public class SetorService {
         setor.setNome(data.setor());
         setor.setEmpresa(empresa);
         setorRepository.save(setor);
+
+        AvaliacaoSetor avaliacaoSetor = new AvaliacaoSetor();
+        avaliacaoSetor.setSetor(setor);
+        avaliacaoSetorRepository.save(avaliacaoSetor);
     }
 
 

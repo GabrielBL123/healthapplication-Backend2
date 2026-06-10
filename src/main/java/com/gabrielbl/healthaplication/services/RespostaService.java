@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,10 +42,12 @@ public class RespostaService {
     @Autowired
     private AvaliacaoSetorRepository avaliacaoSetorRepository;
 
+
+    @Transactional
     public void submeterResposta(RespostaDTO data,String token) {
 
 
-        if(usuarioRepository.findByLogin(data.login())==null){
+        if(usuarioRepository.findByLogin(data.login())!=null){
             throw new AlreadySubmittedException("A resposta ja foi enviada nesse login");
         }
 
@@ -66,11 +69,10 @@ public class RespostaService {
         usuario.setTempoDeTrabalho(data.tempoDeTrabalho());
         usuario.setJornada(data.jornada());
         usuario.setEmpresa(avaliacao.getEmpresa());
-
+        usuarioRepository.save(usuario);
 
         /// Armazena a Resposta
         Resposta resposta = new Resposta();
-        resposta.setId(UUID.randomUUID());
         resposta.setUsuario(usuario);
         List<Integer> valores = new ArrayList<>();
         for (int valor : data.resposta())
@@ -84,7 +86,7 @@ public class RespostaService {
         resposta.setAvaliacaoSetor(avaliacaoSetor);
 
 
-        usuarioRepository.save(usuario);
+
     }
 
     public RespostaInfoEmpresaDTO getRespostaInfoEmpresa(String tokenId) {
