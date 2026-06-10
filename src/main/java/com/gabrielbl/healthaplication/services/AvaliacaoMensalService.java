@@ -169,7 +169,7 @@ public class AvaliacaoMensalService {
             linkToken = gerarNovoToken(avaliacaoMensal);
         }
 
-        return "https://cuidarmais.com/avaliacao/" + linkToken;
+        return linkToken;
     }
 
 
