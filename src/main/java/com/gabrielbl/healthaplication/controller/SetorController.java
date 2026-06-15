@@ -35,14 +35,12 @@ public class SetorController {
         return ResponseEntity.ok(new ResponseDTO<>("Todos os setores retornados",setores));
     }
 
-    @GetMapping("/{cnpj}") //Retorna todos os setores de uma determinada empresa
-    public ResponseEntity<ResponseDTO<Page<SetorResponseDTO>>> getSetoresInEmpresa(Pageable pageable,@PathVariable String cnpj) {
+    @GetMapping("/{id}") //Retorna todos os setores de uma determinada empresa
+    public ResponseEntity<ResponseDTO<Page<SetorResponseDTO>>> getSetoresInEmpresa(Pageable pageable,@PathVariable String id) {
 
-        Page<SetorResponseDTO> setores=setorService.getAllEmpresaSetores(cnpj,pageable);
+        Page<SetorResponseDTO> setores=setorService.getAllEmpresaSetores(id,pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(new ResponseDTO<>("Setores encontrados", setores));
-
-
     }
     //Precisa de melhorias
     @PostMapping("/criar") //Cria um setor(com o nome do setor e o cnpj informados no JSON)

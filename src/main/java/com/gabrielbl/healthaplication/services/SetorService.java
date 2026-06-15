@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -49,7 +50,7 @@ public class SetorService {
             throw new NotFoundException("Empresa não encontrada");
         }
 
-        if (setorRepository.findByNomeAndEmpresaCnpj(data.setor(), data.cnpj()) != null) {
+        if (setorRepository.findByNomeAndEmpresaCnpj(data.setor(), empresa.getCnpj()) != null) {
             throw new BusinessException("Setor já existe nessa empresa");
         }
 
@@ -101,11 +102,11 @@ public class SetorService {
                 a.getEmpresa().getId(),a.getEmpresa().getNome()) );
     }
 
-    public Page<SetorResponseDTO> getAllEmpresaSetores(String cnpj,Pageable pageable) {
+    public Page<SetorResponseDTO> getAllEmpresaSetores(String id,Pageable pageable) {
 
-        Empresa empresa = empresaRepository.findByCnpj(cnpj);
+        Empresa empresa = empresaRepository.findById(UUID.fromString(id)).orElseThrow(() -> new NotFoundException("EmpresaID nao encontrado"));
 
-        if(empresa == null) throw new NotFoundException("Cnpj nao encontrado");
+
 
         Page<Setor> setores = setorRepository.findByEmpresaCnpj(empresa.getCnpj(), pageable);
 

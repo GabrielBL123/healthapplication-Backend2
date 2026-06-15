@@ -42,6 +42,9 @@ public class RespostaService {
     @Autowired
     private AvaliacaoSetorRepository avaliacaoSetorRepository;
 
+    @Autowired
+    private RespostaRepository respostaRepository;
+
 
     @Transactional
     public void submeterResposta(RespostaDTO data,String token) {
@@ -67,13 +70,17 @@ public class RespostaService {
         usuario.setCargo(data.cargo());
         usuario.setSetor(setorRepository.findByNomeAndEmpresaCnpj(data.setor(), avaliacao.getEmpresa().getCnpj()));
         usuario.setTempoDeTrabalho(data.tempoDeTrabalho());
+        usuario.setAvaliacaoMensal(avaliacao);
         usuario.setJornada(data.jornada());
         usuario.setEmpresa(avaliacao.getEmpresa());
         usuarioRepository.save(usuario);
 
+
+
         /// Armazena a Resposta
         Resposta resposta = new Resposta();
         resposta.setUsuario(usuario);
+
         List<Integer> valores = new ArrayList<>();
         for (int valor : data.resposta())
             valores.add(valor);
@@ -84,6 +91,9 @@ public class RespostaService {
         if(avaliacaoSetor==null)
             throw new NotFoundException("Avaliacao setor nao encontrada");
         resposta.setAvaliacaoSetor(avaliacaoSetor);
+        respostaRepository.save(resposta);
+
+
 
 
 

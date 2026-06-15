@@ -215,6 +215,7 @@ public class AvaliacaoMensalService {
         if (dataCompetencia.isAfter(LocalDate.now())) throw new  IllegalArgumentException("data invalida");
     }
 
+
     public AvaliacaoMensalComSetoresResponseDTO getAvaliacao(String avaliacaoId) {
 
         AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findById(UUID.fromString(avaliacaoId))
@@ -232,22 +233,30 @@ public class AvaliacaoMensalService {
         Empresa empresa = avaliacao.getEmpresa();
 
         EmpresaResponseDTO empresaResponseDTO = new EmpresaResponseDTO(
-                empresa.getId(),empresa.getCnpj(), empresa.getNome(),
-                empresa.getEmail(), empresa.getTelefone(),
-                empresa.getSetores().stream()
-                        .map(a -> new SetorResponseDTO(a.getId(),a.getNome(),
-                                a.getEmpresa().getId(),a.getEmpresa().getNome()))
+                empresa.getId(),
+                empresa.getCnpj(),
+                empresa.getNome(),
+                empresa.getEmail(),
+                empresa.getTelefone(),
+                avaliacao.getAvaliacaoSetores().stream()
+                        .map(a ->
+                                new SetorResponseDTO(
+                                    a.getId(),a.getSetor().getNome(),
+                                    a.getAvaliacaoMensal().getEmpresa().getId(),
+                                    a.getAvaliacaoMensal().getEmpresa().getNome())
+                        )
                         .toList()
+
+
         );
 
-
-
-
-
-
         return new AvaliacaoMensalComSetoresResponseDTO(
-                avaliacaoId,avaliacao.getCompetencia(),avaliacao.getCreatedAt(),
-                avaliacao.getIsActive(), empresaResponseDTO,funcionariosDTO
+                avaliacaoId,
+                avaliacao.getCompetencia(),
+                avaliacao.getCreatedAt(),
+                avaliacao.getIsActive(),
+                empresaResponseDTO,
+                funcionariosDTO
         );
 
     }
