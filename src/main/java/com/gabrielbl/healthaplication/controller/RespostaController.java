@@ -35,15 +35,15 @@ public class RespostaController {
 
     //Retorna o cnpj o nome da empresa com o nome dos setores
     //Sera usado quando o usuario acessar o link e começar a responder o questionario
-    @GetMapping("/{token-id}")
-    public ResponseEntity<ResponseDTO<RespostaInfoEmpresaDTO>> getRespostaInfo(@PathVariable String tokenId){
+    @GetMapping("/responder/{token-id}")
+    public ResponseEntity<ResponseDTO<RespostaInfoEmpresaDTO>> getRespostaInfo(@PathVariable("token-id") String tokenId){
         RespostaInfoEmpresaDTO data = respostaService.getRespostaInfoEmpresa(tokenId);
         return ResponseEntity.ok(new ResponseDTO<>("", data));
     }
 
 
     //Quando o usuario envia a sua resposta
-    @PostMapping("/{token-id}")
+    @PostMapping("/responder/{token-id}")
     public ResponseEntity<ResponseDTO<?>> submeterResposta(@PathVariable("token-id") String token,
                                                             @Validated @RequestBody RespostaDTO data) {
         System.out.println("O DTO CHEGOU PERFEITAMENTE: " + data);

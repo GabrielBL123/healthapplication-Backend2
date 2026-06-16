@@ -102,6 +102,8 @@ public class RespostaService {
     public RespostaInfoEmpresaDTO getRespostaInfoEmpresa(String tokenId) {
 
         AvaliacaoTokenLink tokenLink = tokenLinkRepository.findByToken(tokenId);
+        if(tokenLink==null) throw new  NotFoundException("Avaliacao token nao encontrada");
+
         AvaliacaoMensal avaliacao = tokenLink.getAvaliacaoMensal();
         Empresa empresa = avaliacao.getEmpresa();
 
