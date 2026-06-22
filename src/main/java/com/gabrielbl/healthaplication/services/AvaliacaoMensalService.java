@@ -50,9 +50,9 @@ public class AvaliacaoMensalService {
         Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
 
 
-        if(empresa==null){
-            throw new NotFoundException("Empresa nao encontrada");
-        }
+        if(empresa==null) throw new NotFoundException("Empresa nao encontrada");
+
+        if(empresa.getSetores().isEmpty()) throw new NotFoundException("Empresa nao possui setores");
 
         if((avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(
                 data.competencia(), empresa.getId(),true)!=null)){
@@ -123,7 +123,8 @@ public class AvaliacaoMensalService {
         Page<AvaliacaoMensal> page = avaliacaoMensalRepository.findAll(pageable);
 
         return page.map(a ->
-                        new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getCompetencia(),a.getIsActive()));
+                        new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getCompetencia(),a.getIsActive(),
+                                a.getEmpresa().getCnpj()));
     }
 
     public Page<AvaliacaoMensalResponseDTO> getEmpresaAvaliacoes(Pageable pageable,UUID empresaId) {
@@ -134,7 +135,8 @@ public class AvaliacaoMensalService {
         Page<AvaliacaoMensal> page =  avaliacaoMensalRepository.findByEmpresa(empresa,pageable);
 
         return page.map(a ->
-                new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getCompetencia(),a.getIsActive()));
+                new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getCompetencia(),a.getIsActive(),
+                        a.getEmpresa().getCnpj()));
     }
 
     public String getLinkAvaliacao(String cnpj) {

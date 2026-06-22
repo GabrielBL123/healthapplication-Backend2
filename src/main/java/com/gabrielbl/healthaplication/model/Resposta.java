@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
+@Entity(name = "resposta")
 @Table(name = "resposta")
 @Data
 @NoArgsConstructor

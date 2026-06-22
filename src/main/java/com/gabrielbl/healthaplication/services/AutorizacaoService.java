@@ -4,12 +4,14 @@ package com.gabrielbl.healthaplication.services;
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.infra.security.TokenService;
+import com.gabrielbl.healthaplication.model.AvaliacaoMensal;
 import com.gabrielbl.healthaplication.model.DTOs.AutenticacaoDTO;
 import com.gabrielbl.healthaplication.model.DTOs.LoginResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
 import com.gabrielbl.healthaplication.model.Usuario;
 import com.gabrielbl.healthaplication.model.UsuarioFuncao;
+import com.gabrielbl.healthaplication.repository.AvaliacaoMensalRepository;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import jakarta.servlet.http.Cookie;
@@ -32,17 +34,21 @@ public class AutorizacaoService {
     private final TokenService tokenService;
     private final UsuarioRepository usuarioRepository;
     private final EmpresaRepository empresaRepository;
+    private final AvaliacaoMensalRepository avaliacaoMensalRepository;
 
     public AutorizacaoService(@Lazy AuthenticationManager authenticationManager,
                               JavaMailSender mailSender,
                               TokenService tokenService,
                               UsuarioRepository usuarioRepository,
-                              EmpresaRepository empresaRepository) {
+                              EmpresaRepository empresaRepository,
+                              AvaliacaoMensalRepository avaliacaoMensalRepository
+    ) {
         this.authenticationManager = authenticationManager;
         this.mailSender = mailSender;
         this.tokenService = tokenService;
         this.usuarioRepository = usuarioRepository;
         this.empresaRepository = empresaRepository;
+        this.avaliacaoMensalRepository = avaliacaoMensalRepository;
     }
 
 
@@ -65,14 +71,26 @@ public class AutorizacaoService {
         var accessToken = tokenService.generateToken(principal);
         Usuario usuario = usuarioRepository.findByLogin(data.login());
 
+
+
+        //Retorna a avaliacao ativa da empresa, caso exista uma
+        String avaliacaoId;
+        AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findByEmpresaAndIsActive(usuario.getEmpresa(), true);
+        if(avaliacao == null)
+            avaliacaoId =  null;
+        else
+            avaliacaoId = avaliacao.getId().toString();
+
         //Caso o usuario seja admin, nao retorna a informacao da empresa
         if(usuario.getRole().equals(UsuarioFuncao.ADMIN)) {
             return new LoginResponseDTO(accessToken, roles,usuario.getNome(),usuario.getLogin(),
-                    "Usuário Admin","Nao informado", usuario.getId());
+                    "Usuário Admin","Nao informado", usuario.getId(),
+                    avaliacaoId);
         }
 
         return  new LoginResponseDTO(accessToken, roles,usuario.getNome(),usuario.getLogin(),
-                usuario.getEmpresa().getNome(),usuario.getEmpresa().getId().toString(), usuario.getId());
+                usuario.getEmpresa().getNome(),usuario.getEmpresa().getId().toString(), usuario.getId(),
+                avaliacaoId);
 
 
     }

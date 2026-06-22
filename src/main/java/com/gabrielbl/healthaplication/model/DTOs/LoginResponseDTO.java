@@ -3,7 +3,12 @@ package com.gabrielbl.healthaplication.model.DTOs;
 import java.util.List;
 
 public record LoginResponseDTO(String token, List<String> roles,
-                               String nome, String login, String empresaNome,String empresaID,String usuarioID) {
+                               String nome, String login, String empresaNome,
+
+                               String empresaID,String usuarioID,
+                               String avaliacaoAtivaId
+
+) {
 
 //Comentario de teste
 }

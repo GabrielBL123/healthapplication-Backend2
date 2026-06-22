@@ -13,11 +13,9 @@ import java.util.UUID;
 
 public interface AvaliacaoMensalRepository extends JpaRepository<AvaliacaoMensal, UUID>{
 
-    Page<AvaliacaoMensal> findEmpresaById(Empresa empresa, Pageable pageable);
 
     Page<AvaliacaoMensal> findByEmpresa(Empresa empresa, Pageable pageable);
 
-    AvaliacaoMensal findByCompetenciaAndEmpresaId(String  competencia,UUID empresaId);
 
     AvaliacaoMensal findByCompetenciaAndEmpresaIdAndIsActive(String competencia, UUID empresaId, boolean isActive);
 

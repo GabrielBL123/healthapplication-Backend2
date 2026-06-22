@@ -7,7 +7,8 @@ import jakarta.validation.constraints.Pattern;
 import java.util.UUID;
 
 public record AvaliacaoMensalResponseDTO(
-        @NotBlank String id,
-        @NotBlank @Pattern(regexp = "\\d{8}") String competencia,
-        @NotNull Boolean status
+        String id,
+        String competencia,
+        Boolean status,
+        String cnpj
 ) {}

@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Entity
-@Table(name = "avaliacao_mensal_setores")
+@Entity(name = "avaliacao_mensal_setor")
+@Table(name = "avaliacao_mensal_setor")
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
