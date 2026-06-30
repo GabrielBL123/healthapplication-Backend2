@@ -22,8 +22,6 @@ public class AvaliacaoMensal {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
-    private String competencia;
 
     private LocalDateTime createdAt;
 
@@ -39,8 +37,7 @@ public class AvaliacaoMensal {
     @OneToMany(mappedBy = "avaliacaoMensal",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<AvaliacaoSetor>  avaliacaoSetores;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    @OneToMany(mappedBy = "avaliacaoMensal", fetch = FetchType.LAZY)
     private List<Usuario> usuarios;
 
     @OneToMany(mappedBy = "avaliacaoMensal",cascade = CascadeType.ALL,fetch = FetchType.LAZY)

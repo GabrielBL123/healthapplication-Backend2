@@ -8,7 +8,6 @@ import java.util.UUID;
 
 public record AvaliacaoMensalResponseDTO(
         String id,
-        String competencia,
         Boolean status,
         String cnpj
 ) {}

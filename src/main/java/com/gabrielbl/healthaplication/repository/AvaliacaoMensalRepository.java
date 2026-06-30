@@ -17,11 +17,10 @@ public interface AvaliacaoMensalRepository extends JpaRepository<AvaliacaoMensal
     Page<AvaliacaoMensal> findByEmpresa(Empresa empresa, Pageable pageable);
 
 
-    AvaliacaoMensal findByCompetenciaAndEmpresaIdAndIsActive(String competencia, UUID empresaId, boolean isActive);
-
-    AvaliacaoMensal findByEmpresaAndIsActive(Empresa empresa, boolean isActive);
+    AvaliacaoMensal findByEmpresaIdAndIsActive(UUID empresaId, boolean isActive);
 
     Optional<AvaliacaoMensal> findFirstByEmpresaAndIsActiveOrderByCreatedAtDesc(Empresa empresa, boolean b);
 
 
+    AvaliacaoMensal findByEmpresaAndIsActive(Empresa empresa, boolean b);
 }

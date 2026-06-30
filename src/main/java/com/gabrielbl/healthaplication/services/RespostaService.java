@@ -126,10 +126,9 @@ public class RespostaService {
                 () -> new NotFoundException("Empresa nao encontrada")
         );
 
-        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByEmpresaAndIsActive(
-                empresa,true);
-        if(avaliacaoMensal==null)
-            throw new NotFoundException("Avaliacao mensal nao encontrada ou nao ativada");
+        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findFirstByEmpresaAndIsActiveOrderByCreatedAtDesc(
+                empresa,true).orElseThrow(() -> new NotFoundException("AvaliacaoMensal nao encontrada"));
+
 
         Page<Usuario> pageUsuarios = usuarioRepository.findByAvaliacaoMensal(avaliacaoMensal, pageable);
 

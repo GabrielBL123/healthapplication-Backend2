@@ -6,7 +6,6 @@ import java.util.List;
 
 public record AvaliacaoMensalComSetoresResponseDTO(
         String id,
-        String competencia,
         LocalDateTime criadoEm,
         boolean isActive,
         EmpresaResponseDTO empresa,

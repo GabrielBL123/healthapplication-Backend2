@@ -63,23 +63,23 @@ public class AvaliacaoMensalController {
 
 
     @PostMapping("/iniciar") //Cria e inicia uma avaliacao
-    public ResponseEntity<ResponseDTO<?>> iniciarAvaliacaoMensal(@Validated @RequestBody AvaliacaoMensalDTO data) {
+    public ResponseEntity<ResponseDTO<?>> iniciarAvaliacaoMensal(@Validated @RequestBody String cnpj) {
 
 
-        avaliacaoService.criarEIniciarAvaliacaoMensal(data);
+        avaliacaoService.criarEIniciarAvaliacaoMensal(cnpj);
 
-        return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal de "+ data.competencia() +" criada e iniciada",null));
+        return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal de criada e iniciada",null));
     }
 
 
     @PostMapping("/finalizar")//Finaliza uma avaliacao
-    public ResponseEntity<ResponseDTO<?>> finalizarAvaliacaoMensal(@Validated @RequestBody AvaliacaoMensalDTO data) {
+    public ResponseEntity<ResponseDTO<?>> finalizarAvaliacaoMensal(@Validated @RequestBody String cnpj) {
 
-        avaliacaoService.finalizarAvaliacaoMensal(data);
+        avaliacaoService.finalizarAvaliacaoMensal(cnpj);
 
 
 
-        return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal de "+ data.competencia() +" finalizada com sucesso",null));
+        return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal de finalizada com sucesso",null));
     }
 
     @DeleteMapping("/{id}")//Deleta uma avaliacao

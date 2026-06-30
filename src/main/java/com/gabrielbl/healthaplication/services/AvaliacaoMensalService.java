@@ -41,21 +41,21 @@ public class AvaliacaoMensalService {
     @Autowired
     private AvaliacaoTokenLinkRepository avaliacaoTokenLinkRepository;
 
-    public void criarEIniciarAvaliacaoMensal(AvaliacaoMensalDTO data) {
+    public void criarEIniciarAvaliacaoMensal(String cnpj) {
 
 
 
-        competenciaVencida(data.competencia());
 
-        Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
+
+        Empresa empresa = empresaRepository.findByCnpj(cnpj);
 
 
         if(empresa==null) throw new NotFoundException("Empresa nao encontrada");
 
         if(empresa.getSetores().isEmpty()) throw new NotFoundException("Empresa nao possui setores");
 
-        if((avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(
-                data.competencia(), empresa.getId(),true)!=null)){
+        if((avaliacaoMensalRepository.findByEmpresaIdAndIsActive(
+                empresa.getId(),true)!=null)){
             throw new AlreadySubmittedException("Avaliacao Mensal ja ativa nessa empresa");
         }
 
@@ -63,7 +63,6 @@ public class AvaliacaoMensalService {
 
 
         AvaliacaoMensal avaliacaoMensal = new AvaliacaoMensal();
-        avaliacaoMensal.setCompetencia(data.competencia());
         avaliacaoMensal.setIsActive(true);
         avaliacaoMensal.setEmpresa(empresa);
         avaliacaoMensal.setCreatedAt(LocalDateTime.now());
@@ -87,13 +86,13 @@ public class AvaliacaoMensalService {
     }
 
 
-    public void finalizarAvaliacaoMensal(AvaliacaoMensalDTO data) {
+    public void finalizarAvaliacaoMensal(String cnpj) {
 
 
-        Empresa empresa = empresaRepository.findByCnpj(data.cnpj());
+        Empresa empresa = empresaRepository.findByCnpj(cnpj);
         if(empresa ==null) throw new NotFoundException("Empresa nao encontrada");
 
-        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByCompetenciaAndEmpresaIdAndIsActive(data.competencia(), empresa.getId(),true);
+        AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository.findByEmpresaIdAndIsActive(empresa.getId(),true);
         if(avaliacaoMensal.getIsActive()==false) throw new NotFoundException("Avaliacao Mensal ativa nao existente");
 
         avaliacaoMensal.setIsActive(false);
@@ -123,7 +122,7 @@ public class AvaliacaoMensalService {
         Page<AvaliacaoMensal> page = avaliacaoMensalRepository.findAll(pageable);
 
         return page.map(a ->
-                        new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getCompetencia(),a.getIsActive(),
+                        new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getIsActive(),
                                 a.getEmpresa().getCnpj()));
     }
 
@@ -135,7 +134,7 @@ public class AvaliacaoMensalService {
         Page<AvaliacaoMensal> page =  avaliacaoMensalRepository.findByEmpresa(empresa,pageable);
 
         return page.map(a ->
-                new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getCompetencia(),a.getIsActive(),
+                new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getIsActive(),
                         a.getEmpresa().getCnpj()));
     }
 
@@ -254,7 +253,6 @@ public class AvaliacaoMensalService {
 
         return new AvaliacaoMensalComSetoresResponseDTO(
                 avaliacaoId,
-                avaliacao.getCompetencia(),
                 avaliacao.getCreatedAt(),
                 avaliacao.getIsActive(),
                 empresaResponseDTO,
