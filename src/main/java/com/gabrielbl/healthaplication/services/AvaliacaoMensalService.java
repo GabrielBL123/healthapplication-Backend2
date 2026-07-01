@@ -122,7 +122,9 @@ public class AvaliacaoMensalService {
         Page<AvaliacaoMensal> page = avaliacaoMensalRepository.findAll(pageable);
 
         return page.map(a ->
-                        new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getIsActive(),
+                        new AvaliacaoMensalResponseDTO(a.getId().toString(),
+                                a.getCreatedAt().toString().replace("T", " "),
+                                a.getIsActive(),
                                 a.getEmpresa().getCnpj()));
     }
 
@@ -134,7 +136,9 @@ public class AvaliacaoMensalService {
         Page<AvaliacaoMensal> page =  avaliacaoMensalRepository.findByEmpresa(empresa,pageable);
 
         return page.map(a ->
-                new AvaliacaoMensalResponseDTO(a.getId().toString(),a.getIsActive(),
+                new AvaliacaoMensalResponseDTO(a.getId().toString(),
+                        a.getCreatedAt().toString().replace("T", " "),
+                        a.getIsActive(),
                         a.getEmpresa().getCnpj()));
     }
 
@@ -226,7 +230,7 @@ public class AvaliacaoMensalService {
 
         List<FuncionarioDTO> funcionariosDTO = funcionarios.stream()
                 .map(a -> new FuncionarioDTO(
-                    a.getLogin(), a.getNome(), a.getSetor().toString(), a.getCargo(),
+                    a.getLogin(), a.getNome(), a.getSetor().getNome(), a.getCargo(),
                     a.getTempoDeTrabalho(), a.getJornada()
                 ))
                 .toList();
@@ -242,7 +246,7 @@ public class AvaliacaoMensalService {
                 avaliacao.getAvaliacaoSetores().stream()
                         .map(a ->
                                 new SetorResponseDTO(
-                                    a.getId(),a.getSetor().getNome(),
+                                    a.getId(), a.getSetor().getNome(),
                                     a.getAvaliacaoMensal().getEmpresa().getId(),
                                     a.getAvaliacaoMensal().getEmpresa().getNome())
                         )

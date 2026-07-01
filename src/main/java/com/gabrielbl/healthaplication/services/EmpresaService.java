@@ -2,14 +2,13 @@ package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
-import com.gabrielbl.healthaplication.model.AvaliacaoMensal;
+
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
-import com.gabrielbl.healthaplication.model.DTOs.AvaliacaoMensalResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
-import com.gabrielbl.healthaplication.model.DTOs.SetorResponseDTO; // ✨ IMPORT NOVO
+import com.gabrielbl.healthaplication.model.DTOs.SetorResponseDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
-import com.gabrielbl.healthaplication.model.AvaliacaoTokenLink;
+
 import com.gabrielbl.healthaplication.repository.AvaliacaoMensalRepository;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.AvaliacaoTokenLinkRepository;
@@ -20,7 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors; // ✨ IMPORT NOVO
+import java.util.stream.Collectors;
 
 @Service
 public class EmpresaService {
