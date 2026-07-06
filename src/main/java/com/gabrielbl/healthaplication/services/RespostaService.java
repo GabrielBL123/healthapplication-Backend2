@@ -27,6 +27,9 @@ public class RespostaService {
     private SetorRepository setorRepository;
 
     @Autowired
+    private RespostaGenerator respostaGenerator;
+
+    @Autowired
     private EmpresaRepository empresaRepository;
 
     @Autowired
@@ -264,5 +267,22 @@ public class RespostaService {
     // Utilitário para evitar dízimas periódicas longas
     private double formatarDuasCasas(double valor) {
         return Math.round(valor * 100.0) / 100.0;
+    }
+
+    public void gerarRespostasAleatorias(String empresaId, int quantidade) {
+        for (int i = 0; i < quantidade; i++) {
+            RespostaDTO respostaAleatoria = respostaGenerator.generateRandomResposta();
+
+            // Apply business rules
+
+
+            // Store in database
+            respostaRepository.save(new Resposta(
+
+            ));
+
+        }
+
+
     }
 }
