@@ -296,18 +296,18 @@ public class RespostaService {
 
 
         /// Cria as entidades primeiro
-        Empresa empresa = respostaGenerator.generateRandomEmpresa();
+        respostaGenerator.generateRandomEmpresa();
 
-        for (int i = 1; i < 9; i++) {
-            respostaGenerator.generateRandomSetor(empresa,i);
+        for (int i = 0; i < 6; i++) {
+            respostaGenerator.generateRandomSetor(i);
         }
 
-        String link = respostaGenerator.generateRandomAvaliacaoMensal(empresa);
+        String link = respostaGenerator.generateRandomAvaliacaoMensal();
 
 
 
         /// Submete as respostas
-        for (int i = 1; i < quantidade; i++) {
+        for (int i = 0; i < quantidade; i++) {
 
             RespostaDTO resposta = respostaGenerator.generateRandomResposta();
 

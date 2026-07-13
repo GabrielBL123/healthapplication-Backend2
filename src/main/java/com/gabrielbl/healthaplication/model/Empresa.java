@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +39,7 @@ public class Empresa {
 
     @OneToMany(mappedBy = "empresa",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     @JsonIgnore
-    private List<Setor> setores;
+    private List<Setor> setores = new ArrayList<>();
 
 
 

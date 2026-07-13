@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,13 +39,13 @@ public class AvaliacaoMensal {
     private Empresa empresa;
 
     @OneToMany(mappedBy = "avaliacaoMensal",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    private List<AvaliacaoSetor>  avaliacaoSetores;
+    private List<AvaliacaoSetor>  avaliacaoSetores = new ArrayList<>();
 
     @OneToMany(mappedBy = "avaliacaoMensal", fetch = FetchType.LAZY)
-    private List<Usuario> usuarios;
+    private List<Usuario> usuarios = new ArrayList<>();
 
     @OneToMany(mappedBy = "avaliacaoMensal",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    private List<AvaliacaoTokenLink> avaliacaoTokenLink;
+    private List<AvaliacaoTokenLink> avaliacaoTokenLink = new ArrayList<>();
 
     public AvaliacaoMensal(Empresa empresa) {
         this.empresa = empresa;

@@ -79,13 +79,16 @@ public class RespostaGenerator {
 
 
 
-    public void generateRandomSetor(Empresa empresa,int i) {
+    public void generateRandomSetor(int i) {
+
+        Empresa empresa = empresaRepository.findByCnpj("01234567891234");
         Setor setor = new Setor(
                 SETORES[i],
                 empresa
         );
         setorRepository.save(setor);
         empresa.getSetores().add(setor);
+
         empresaRepository.save(empresa);
     }
 
@@ -124,28 +127,24 @@ public class RespostaGenerator {
         return usuario;
     }
 
-    public String generateRandomAvaliacaoMensal(Empresa empresa) {
-
-        /// Cria e salva as entidades AvaliacaoMensal, AvaliacaoSetor e AvaliacaoTokenLink
-
+    public String generateRandomAvaliacaoMensal() {
+        Empresa empresa = empresaRepository.findByCnpj("01234567891234");
         AvaliacaoMensal avaliacao = new AvaliacaoMensal(empresa);
-        avaliacaoMensalRepository.save(avaliacao);
-        for(Setor setor : empresa.getSetores()) {
-            AvaliacaoSetor avaliacaoSetor = new AvaliacaoSetor(setor,avaliacao);
-            avaliacao.getAvaliacaoSetores().add(avaliacaoSetor);
-            avaliacaoSetorRepository.save(avaliacaoSetor);
 
+        for (Setor setor : empresa.getSetores()) {
+            AvaliacaoSetor avaliacaoSetor = new AvaliacaoSetor(setor, avaliacao);
+            avaliacao.getAvaliacaoSetores().add(avaliacaoSetor);
         }
+
         AvaliacaoTokenLink avaliacaoLink = new AvaliacaoTokenLink();
         avaliacaoLink.setToken(UUID.randomUUID().toString());
         avaliacaoLink.setAvaliacaoMensal(avaliacao);
-        avaliacaoTokenLinkRepository.save(avaliacaoLink);
         avaliacao.getAvaliacaoTokenLink().add(avaliacaoLink);
-        avaliacaoMensalRepository.save(avaliacao);
+
+        avaliacaoMensalRepository.save(avaliacao); // single save, relies on cascade
 
         return avaliacaoLink.getToken();
     }
-
 
 
     /**
