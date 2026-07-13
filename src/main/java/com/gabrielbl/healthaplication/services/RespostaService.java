@@ -292,7 +292,29 @@ public class RespostaService {
         return csv.toString();
     }
 
-    public void gerarRespostasAleatorias(String empresaId, int quantidade) {
-        // Seu código existente...
+    public void gerarRespostasAleatorias(int quantidade) {
+
+
+        /// Cria as entidades primeiro
+        Empresa empresa = respostaGenerator.generateRandomEmpresa();
+
+        for (int i = 1; i < 9; i++) {
+            respostaGenerator.generateRandomSetor(empresa,i);
+        }
+
+        String link = respostaGenerator.generateRandomAvaliacaoMensal(empresa);
+
+
+
+        /// Submete as respostas
+        for (int i = 1; i < quantidade; i++) {
+
+            RespostaDTO resposta = respostaGenerator.generateRandomResposta();
+
+            submeterResposta(resposta,link);
+
+        }
+
+
     }
 }

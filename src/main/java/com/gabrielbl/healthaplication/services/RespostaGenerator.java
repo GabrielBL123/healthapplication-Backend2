@@ -85,6 +85,8 @@ public class RespostaGenerator {
                 empresa
         );
         setorRepository.save(setor);
+        empresa.getSetores().add(setor);
+        empresaRepository.save(empresa);
     }
 
     public Usuario generateRandomUsuario(Empresa empresa) {
