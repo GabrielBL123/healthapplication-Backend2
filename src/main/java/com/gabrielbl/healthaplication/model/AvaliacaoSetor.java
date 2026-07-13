@@ -33,4 +33,10 @@ public class AvaliacaoSetor {
     @JoinColumn(name = "avaliacao_mensal_id")
     private AvaliacaoMensal avaliacaoMensal;
 
+
+    public AvaliacaoSetor(Setor setor, AvaliacaoMensal avaliacaoMensal) {
+        this.setor = setor;
+        this.avaliacaoMensal = avaliacaoMensal;
+
+    }
 }

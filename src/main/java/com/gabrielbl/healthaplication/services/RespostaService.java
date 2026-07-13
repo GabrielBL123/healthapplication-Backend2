@@ -269,7 +269,43 @@ public class RespostaService {
         return Math.round(valor * 100.0) / 100.0;
     }
 
+
+
+
+
+
+
+
+
+
+    /// Gera as respostas, criando todas as Entidades necessarias
+    ///
+    ///
     public void gerarRespostasAleatorias(String empresaId, int quantidade) {
+
+
+        int quantidadeDeSetores = 6;
+
+
+        /// Gera as entidades primeiro
+
+        Empresa empresa = respostaGenerator.generateRandomEmpresa();
+
+
+        for (int i = 0; i < quantidade; i++) {
+            Setor setor = respostaGenerator.generateRandomSetor(empresa,i); // gera o setor
+            empresa.getSetores().add(setor); // armazena o relacionamento
+        }
+
+        AvaliacaoMensal avaliacaoMensal = respostaGenerator.generateRandomAvaliacaoMensal(empresa);
+
+
+
+
+
+
+        /// Depois gera as Respostas
+
         for (int i = 0; i < quantidade; i++) {
             RespostaDTO respostaAleatoria = respostaGenerator.generateRandomResposta();
 

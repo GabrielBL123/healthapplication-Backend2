@@ -43,4 +43,9 @@ public class AvaliacaoMensal {
     @OneToMany(mappedBy = "avaliacaoMensal",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private List<AvaliacaoTokenLink> avaliacaoTokenLink;
 
+    public AvaliacaoMensal(Empresa empresa) {
+        this.empresa = empresa;
+        this.createdAt = LocalDateTime.now();
+    }
+
 }

@@ -1,10 +1,12 @@
 package com.gabrielbl.healthaplication.services;
 
 
+import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.RespostaDTO;
 import com.github.javafaker.Faker;
 import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.Null;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -29,6 +31,72 @@ public class RespostaGenerator {
                 Duration.ofHours(random.nextInt(2, 12)), // 2 to 12 hours
                 generateRandomAnswers() // 52 random answers (0-5 scale or boolean)
         );
+    }
+
+
+    /**
+    Deve ser criado TODAS as entidades necessarias para submeter uma RESPOSTA
+     */
+
+    public Empresa generateRandomEmpresa() {
+        return new Empresa(
+                "01234567891234",
+                faker.company().name(),
+                faker.internet().emailAddress(),
+                faker.phoneNumber().cellPhone()
+
+        );
+    }
+
+
+
+    public Setor generateRandomSetor(Empresa empresa,int i) {
+
+        return new Setor(
+                SETORES[i],
+                empresa
+        );
+    }
+
+    public Usuario generateRandomUsuario(Empresa empresa) {
+        return new Usuario(
+            faker.name().fullName(),
+                faker.internet().emailAddress(),
+                "",
+                UsuarioFuncao.USER,
+                empresa,
+                CARGOS[random.nextInt(CARGOS.length)],
+                LocalDateTime.now().minusDays(random.nextInt()),
+                Duration.ofHours(random.nextInt())
+        );
+    }
+
+    public Usuario generateRandomRh(Empresa empresa) {
+        return new Usuario(
+                "Rh aleatorio da empresa aleatoria",
+                faker.internet().emailAddress(),
+                "",
+                UsuarioFuncao.RH,
+                empresa,
+                "Rh",
+                null,
+                null
+
+
+
+                );
+    }
+
+    public AvaliacaoMensal generateRandomAvaliacaoMensal(Empresa empresa) {
+
+        return new AvaliacaoMensal(
+            empresa
+        );
+    }
+
+    public AvaliacaoSetor generateRandomAvaliacaoSetor(AvaliacaoMensal avaliacaoMensal,Setor setor) {
+
+        return new AvaliacaoSetor(setor,avaliacaoMensal);
     }
 
     /**
@@ -63,4 +131,6 @@ public class RespostaGenerator {
         }
         return answers;
     }
+
+
 }

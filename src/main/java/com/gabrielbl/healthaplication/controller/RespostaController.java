@@ -57,6 +57,7 @@ public class RespostaController {
     public ResponseEntity<ResponseDTO<?>> gerarRespostasAleatorias(
             @RequestParam String empresaId,
             @RequestParam(defaultValue = "100") int quantidade) {
+
         respostaService.gerarRespostasAleatorias(empresaId, quantidade);
         return ResponseEntity.ok(new ResponseDTO<>(
                 "Geradas " + quantidade + " respostas aleatórias com sucesso",

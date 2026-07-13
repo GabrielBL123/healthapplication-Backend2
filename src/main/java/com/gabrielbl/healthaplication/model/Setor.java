@@ -36,4 +36,8 @@ public class Setor {
     private List<AvaliacaoSetor> avaliacoesSetor = new ArrayList<>();
 
 
+    public Setor(String nome,Empresa empresa) {
+        this.nome = nome;
+        this.empresa = empresa;
+    }
 }
