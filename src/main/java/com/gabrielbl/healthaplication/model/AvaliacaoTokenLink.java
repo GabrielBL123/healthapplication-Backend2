@@ -25,10 +25,10 @@ public class AvaliacaoTokenLink {
 
     private LocalDateTime expiracaoEm;
 
-    @Column(nullable = false)
+    @Column
     private LocalDateTime criadoEm =  LocalDateTime.now();
 
-    @Column(nullable = false)
+    @Column
     private Boolean isActive = true;
 
 

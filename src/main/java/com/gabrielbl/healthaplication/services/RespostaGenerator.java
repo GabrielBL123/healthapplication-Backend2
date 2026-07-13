@@ -3,16 +3,21 @@ package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.RespostaDTO;
+import com.gabrielbl.healthaplication.repository.*;
 import com.github.javafaker.Faker;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.Null;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.UUID;
 
 @Component
+@Transactional
 public class RespostaGenerator {
 
     private final Faker faker = new Faker();
@@ -20,6 +25,28 @@ public class RespostaGenerator {
 
     private static final String[] CARGOS = {"Analista", "Desenvolvedor", "Gerente", "Coordenador", "Especialista"};
     private static final String[] SETORES = {"RH", "TI", "Financeiro", "Operações", "Marketing", "Vendas"};
+
+    @Autowired
+    UsuarioRepository usuarioRepository;
+
+    @Autowired
+    RespostaRepository respostaRepository;
+
+    @Autowired
+    EmpresaRepository empresaRepository;
+
+    @Autowired
+    AvaliacaoMensalRepository avaliacaoMensalRepository;
+
+    @Autowired
+    AvaliacaoSetorRepository avaliacaoSetorRepository;
+
+    @Autowired
+    SetorRepository setorRepository;
+
+    @Autowired
+    AvaliacaoTokenLinkRepository avaliacaoTokenLinkRepository;
+
 
     public RespostaDTO generateRandomResposta() {
         return new RespostaDTO(
@@ -39,40 +66,47 @@ public class RespostaGenerator {
      */
 
     public Empresa generateRandomEmpresa() {
-        return new Empresa(
+        Empresa empresa = new Empresa(
                 "01234567891234",
                 faker.company().name(),
                 faker.internet().emailAddress(),
                 faker.phoneNumber().cellPhone()
 
         );
+        empresaRepository.save(empresa);
+        return empresa;
     }
 
 
 
-    public Setor generateRandomSetor(Empresa empresa,int i) {
-
-        return new Setor(
+    public void generateRandomSetor(Empresa empresa,int i) {
+        Setor setor = new Setor(
                 SETORES[i],
                 empresa
         );
+        setorRepository.save(setor);
     }
 
     public Usuario generateRandomUsuario(Empresa empresa) {
-        return new Usuario(
-            faker.name().fullName(),
+
+        Usuario usuario = new Usuario(
+                faker.name().fullName(),
                 faker.internet().emailAddress(),
                 "",
                 UsuarioFuncao.USER,
                 empresa,
                 CARGOS[random.nextInt(CARGOS.length)],
-                LocalDateTime.now().minusDays(random.nextInt()),
+                LocalDateTime.now().minusDays(random.nextInt(365)),
                 Duration.ofHours(random.nextInt())
         );
+        usuarioRepository.save(usuario);
+
+        return usuario;
     }
 
     public Usuario generateRandomRh(Empresa empresa) {
-        return new Usuario(
+
+        Usuario usuario = new Usuario(
                 "Rh aleatorio da empresa aleatoria",
                 faker.internet().emailAddress(),
                 "",
@@ -81,23 +115,36 @@ public class RespostaGenerator {
                 "Rh",
                 null,
                 null
-
-
-
-                );
-    }
-
-    public AvaliacaoMensal generateRandomAvaliacaoMensal(Empresa empresa) {
-
-        return new AvaliacaoMensal(
-            empresa
         );
+
+        usuarioRepository.save(usuario);
+
+        return usuario;
     }
 
-    public AvaliacaoSetor generateRandomAvaliacaoSetor(AvaliacaoMensal avaliacaoMensal,Setor setor) {
+    public String generateRandomAvaliacaoMensal(Empresa empresa) {
 
-        return new AvaliacaoSetor(setor,avaliacaoMensal);
+        /// Cria e salva as entidades AvaliacaoMensal, AvaliacaoSetor e AvaliacaoTokenLink
+
+        AvaliacaoMensal avaliacao = new AvaliacaoMensal(empresa);
+        avaliacaoMensalRepository.save(avaliacao);
+        for(Setor setor : empresa.getSetores()) {
+            AvaliacaoSetor avaliacaoSetor = new AvaliacaoSetor(setor,avaliacao);
+            avaliacao.getAvaliacaoSetores().add(avaliacaoSetor);
+            avaliacaoSetorRepository.save(avaliacaoSetor);
+
+        }
+        AvaliacaoTokenLink avaliacaoLink = new AvaliacaoTokenLink();
+        avaliacaoLink.setToken(UUID.randomUUID().toString());
+        avaliacaoLink.setAvaliacaoMensal(avaliacao);
+        avaliacaoTokenLinkRepository.save(avaliacaoLink);
+        avaliacao.getAvaliacaoTokenLink().add(avaliacaoLink);
+        avaliacaoMensalRepository.save(avaliacao);
+
+        return avaliacaoLink.getToken();
     }
+
+
 
     /**
      * Generates 52 random answers.

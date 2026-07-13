@@ -23,7 +23,7 @@ public class AvaliacaoMensal {
     private UUID id;
 
 
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt =  LocalDateTime.now();
 
     private LocalDateTime submittedAt;
 

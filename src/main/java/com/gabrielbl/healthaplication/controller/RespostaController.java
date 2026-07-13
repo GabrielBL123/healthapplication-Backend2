@@ -1,15 +1,14 @@
 package com.gabrielbl.healthaplication.controller;
 
 
-import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
-import com.gabrielbl.healthaplication.model.DTOs.RespostaDTO;
-import com.gabrielbl.healthaplication.model.DTOs.ListaRespostaDTO;
-import com.gabrielbl.healthaplication.model.DTOs.RespostaInfoEmpresaDTO;
+import com.gabrielbl.healthaplication.model.DTOs.*;
 import com.gabrielbl.healthaplication.services.RespostaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,14 +52,15 @@ public class RespostaController {
     }
 
 
+
+
     @PostMapping("/gerar-aleatorios")
     public ResponseEntity<ResponseDTO<?>> gerarRespostasAleatorias(
-            @RequestParam String empresaId,
-            @RequestParam(defaultValue = "100") int quantidade) {
+            @Validated @RequestBody GerarRespostasDTO data) {
 
-        respostaService.gerarRespostasAleatorias(empresaId, quantidade);
+        respostaService.gerarRespostasAleatorias(data.quantidade());
         return ResponseEntity.ok(new ResponseDTO<>(
-                "Geradas " + quantidade + " respostas aleatórias com sucesso",
+                "Geradas " + data.quantidade() + " respostas aleatórias com sucesso",
                 null
         ));
     }
