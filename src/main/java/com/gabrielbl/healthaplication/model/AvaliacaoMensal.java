@@ -30,6 +30,9 @@ public class AvaliacaoMensal {
     @Column(columnDefinition = "boolean default true")
     private Boolean isActive = true;
 
+    @Column(columnDefinition = "boolean default false")
+    private Boolean rhSinalizouTermino = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "empresa_id")
     private Empresa empresa;
