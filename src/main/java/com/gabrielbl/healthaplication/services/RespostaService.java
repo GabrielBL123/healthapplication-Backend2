@@ -1,5 +1,9 @@
 package com.gabrielbl.healthaplication.services;
 
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.BusinessException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
@@ -294,7 +298,6 @@ public class RespostaService {
 
     public void gerarRespostasAleatorias(int quantidade) {
 
-
         /// Cria as entidades primeiro
         respostaGenerator.generateRandomEmpresa();
 
@@ -304,17 +307,96 @@ public class RespostaService {
 
         String link = respostaGenerator.generateRandomAvaliacaoMensal();
 
-
-
         /// Submete as respostas
         for (int i = 0; i < quantidade; i++) {
-
             RespostaDTO resposta = respostaGenerator.generateRandomResposta();
-
             submeterResposta(resposta,link);
-
         }
+    }
 
+    // =========================================================================================
+    // EXPORTAÇÃO DE ARQUIVO EXCEL FORMATADO (Múltiplas Abas)
+    // =========================================================================================
+    public byte[] gerarRelatorioExcel(UUID avaliacaoId) {
+        // 1. Calcula os riscos de todos os setores usando a sua lógica
+        RiscoEmpresaDTO relatorio = calcularRiscoEmpresa(avaliacaoId);
 
+        // 2. Abre o template original
+        try (InputStream is = getClass().getResourceAsStream("/template_dashboard.xlsx");
+             Workbook workbook = new XSSFWorkbook(is);
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            if (is == null) {
+                throw new RuntimeException("Template do Excel não encontrado!");
+            }
+
+            // Pega a primeira aba para usar como molde
+            Sheet abaMolde = workbook.getSheetAt(0);
+
+            int indexAba = 0;
+            for (RiscoSetorDTO setor : relatorio.setores()) {
+                Sheet abaSetor;
+
+                // Se for o primeiro setor, usa a aba que já existe. Se forem os seguintes, clona o visual do molde!
+                if (indexAba == 0) {
+                    abaSetor = abaMolde;
+                    workbook.setSheetName(0, setor.setorNome());
+                } else {
+                    abaSetor = workbook.cloneSheet(0);
+                    workbook.setSheetName(workbook.getSheetIndex(abaSetor), setor.setorNome());
+                }
+                indexAba++;
+
+                // --- PREENCHIMENTO DOS DADOS DO SETOR NA ABA CORRESPONDENTE ---
+
+                // CNPJ (Linha 4, Coluna B -> Row index 3, Cell index 1)
+                Row linhaCnpj = abaSetor.getRow(3);
+                if (linhaCnpj == null) linhaCnpj = abaSetor.createRow(3);
+                linhaCnpj.getCell(1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(relatorio.cnpj());
+
+                // Nome do Setor (Linha 5, Coluna B -> Row index 4, Cell index 1)
+                Row linhaSetor = abaSetor.getRow(4);
+                if (linhaSetor == null) linhaSetor = abaSetor.createRow(4);
+                linhaSetor.getCell(1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(setor.setorNome());
+
+                // Quantidade de Trabalhadores (Linha 7, Coluna B -> Row index 6, Cell index 1)
+                Row linhaTrab = abaSetor.getRow(6);
+                if (linhaTrab == null) linhaTrab = abaSetor.createRow(6);
+                linhaTrab.getCell(1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(setor.totalRespondentes());
+
+                // Se não atingir o limite mínimo de 3 respondentes, protege as informações confidenciais
+                if (!setor.exibirResultado()) {
+                    Row rowAviso = abaSetor.getRow(12);
+                    if (rowAviso == null) rowAviso = abaSetor.createRow(12);
+                    rowAviso.getCell(1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)
+                            .setCellValue("DADOS PROTEGIDOS (Mínimo de 3 respondentes no setor para exibir os resultados)");
+                    continue; // Pula para o próximo setor
+                }
+
+                // Se atingir 3 ou mais respostas, preenche a tabela de riscos (Começa na linha 13 -> Row index 12)
+                int linhaAtual = 12;
+                for (RiscoFatorDTO fator : setor.fatores()) {
+                    Row row = abaSetor.getRow(linhaAtual);
+                    if (row == null) row = abaSetor.createRow(linhaAtual);
+
+                    // Coluna C (índice 2): Gravidade (Condição Ajustada)
+                    row.getCell(2, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(fator.condicaoAjustada());
+
+                    // Coluna D (índice 3): Probabilidade (Percepção)
+                    row.getCell(3, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(fator.percepcao());
+
+                    // Coluna E (índice 4): Matriz de Risco (Resultado classificado)
+                    row.getCell(4, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(fator.classificacao());
+
+                    linhaAtual++;
+                }
+            }
+
+            workbook.write(out);
+            return out.toByteArray();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao gerar o Excel formatado: " + e.getMessage());
+        }
     }
 }
