@@ -80,17 +80,17 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("Término da avaliação sinalizado com sucesso", null));
     }
 
-    // Rota para o Admin baixar a planilha pronta
-    @GetMapping("/{avaliacaoId}/exportar-csv")
-    public ResponseEntity<byte[]> exportarCsv(@PathVariable String avaliacaoId) {
-        String csv = respostaService.gerarRelatorioCsv(UUID.fromString(avaliacaoId));
-        // Formata os bytes usando ISO-8859-1 (ou UTF-8) para o Excel ler acentos do português corretamente
-        byte[] csvBytes = csv.getBytes(java.nio.charset.StandardCharsets.ISO_8859_1);
+    @GetMapping("/{avaliacaoId}/exportar-excel")
+    public ResponseEntity<byte[]> exportarExcel(@PathVariable String avaliacaoId) {
 
+        // 1. Gera os bytes do Excel usando o seu Service
+        byte[] excelBytes = respostaService.gerarRelatorioExcel(UUID.fromString(avaliacaoId));
+
+        // 2. Retorna o arquivo formatado para o navegador baixar
         return ResponseEntity.ok()
-                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=relatorio_riscos_nr1.csv")
-                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "text/csv; charset=ISO-8859-1")
-                .body(csvBytes);
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=Dashboard_NR1.xlsx")
+                .header(org.springframework.http.HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .body(excelBytes);
     }
 
     @DeleteMapping("/{id}")//Deleta uma avaliacao
