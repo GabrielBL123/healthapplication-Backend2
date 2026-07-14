@@ -3,16 +3,16 @@ package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
+import com.gabrielbl.healthaplication.exception.UnauthorizedException;
 import com.gabrielbl.healthaplication.infra.security.TokenService;
-import com.gabrielbl.healthaplication.model.AvaliacaoMensal;
+import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.AutenticacaoDTO;
 import com.gabrielbl.healthaplication.model.DTOs.LoginResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarDTO;
-import com.gabrielbl.healthaplication.model.Empresa;
-import com.gabrielbl.healthaplication.model.Usuario;
-import com.gabrielbl.healthaplication.model.UsuarioFuncao;
+import com.gabrielbl.healthaplication.model.DTOs.TokenPairDTO;
 import com.gabrielbl.healthaplication.repository.AvaliacaoMensalRepository;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
+import com.gabrielbl.healthaplication.repository.RefreshTokenRepository;
 import com.gabrielbl.healthaplication.repository.UsuarioRepository;
 import jakarta.servlet.http.Cookie;
 import org.springframework.context.annotation.Lazy;
@@ -22,7 +22,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,13 +38,15 @@ public class AutorizacaoService {
     private final UsuarioRepository usuarioRepository;
     private final EmpresaRepository empresaRepository;
     private final AvaliacaoMensalRepository avaliacaoMensalRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public AutorizacaoService(@Lazy AuthenticationManager authenticationManager,
                               JavaMailSender mailSender,
                               TokenService tokenService,
                               UsuarioRepository usuarioRepository,
                               EmpresaRepository empresaRepository,
-                              AvaliacaoMensalRepository avaliacaoMensalRepository
+                              AvaliacaoMensalRepository avaliacaoMensalRepository,
+                              RefreshTokenRepository refreshTokenRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.mailSender = mailSender;
@@ -49,6 +54,7 @@ public class AutorizacaoService {
         this.usuarioRepository = usuarioRepository;
         this.empresaRepository = empresaRepository;
         this.avaliacaoMensalRepository = avaliacaoMensalRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
 
@@ -68,7 +74,7 @@ public class AutorizacaoService {
                 .toList();
 
         // generate token (TokenService will also include roles claim)
-        var accessToken = tokenService.generateToken(principal);
+        var accessToken = tokenService.generateAccessToken(principal);
         Usuario usuario = usuarioRepository.findByLogin(data.login());
 
 
@@ -159,8 +165,47 @@ public class AutorizacaoService {
     }
 
 
+    @Transactional
+    public TokenPairDTO atualizar(String refreshTokenRaw) {
+        String login = tokenService.validateToken(refreshTokenRaw);
+        if (login == null) {
+            throw new UnauthorizedException("Refresh token inválido ou expirado");
+        }
+
+        String tokenHash = tokenService.hashToken(refreshTokenRaw);
+        RefreshToken storedToken = refreshTokenRepository.findByTokenHash(tokenHash)
+                .orElseThrow(() -> new UnauthorizedException("Refresh token não reconhecido"));
+
+        if (storedToken.isRevoked() || storedToken.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new UnauthorizedException("Refresh token revogado ou expirado");
+        }
+
+        storedToken.setRevoked(true);
+        refreshTokenRepository.save(storedToken);
+
+        Usuario usuario = usuarioRepository.findByLogin(login);
+        String newAccessToken = tokenService.generateAccessToken(usuario);
+        String newRefreshToken = tokenService.generateRefreshToken(usuario);
+        persistRefreshToken(usuario, newRefreshToken);
+
+        return new TokenPairDTO(newAccessToken, newRefreshToken);
+    }
+
+    private void persistRefreshToken(Usuario usuario, String rawToken) {
+        RefreshToken entity = new RefreshToken();
+        entity.setTokenHash(tokenService.hashToken(rawToken));
+        entity.setUsuario(usuario);
+        entity.setExpiryDate(LocalDateTime.now().plusDays(7));
+        refreshTokenRepository.save(entity);
+    }
 
 
+    public void logout(String hash) {
 
+        refreshTokenRepository.findByTokenHash(hash).ifPresent(rt -> {
+            rt.setRevoked(true);
+            refreshTokenRepository.save(rt);
+        });
 
+    }
 }

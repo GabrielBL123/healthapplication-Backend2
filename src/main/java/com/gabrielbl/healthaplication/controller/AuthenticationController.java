@@ -2,21 +2,20 @@ package com.gabrielbl.healthaplication.controller;
 
 
 
+import com.gabrielbl.healthaplication.infra.security.TokenService;
 import com.gabrielbl.healthaplication.model.*;
-import com.gabrielbl.healthaplication.model.DTOs.AutenticacaoDTO;
-import com.gabrielbl.healthaplication.model.DTOs.EnviarConviteDTO;
-import com.gabrielbl.healthaplication.model.DTOs.LoginResponseDTO;
-import com.gabrielbl.healthaplication.model.DTOs.RegistrarDTO;
-import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.*;
 import com.gabrielbl.healthaplication.services.AutorizacaoService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.Duration;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -24,8 +23,11 @@ public class AuthenticationController {
 
     private final AutorizacaoService autorizacaoService;
 
-    public AuthenticationController(AutorizacaoService autorizacaoService) {
+    private final TokenService tokenService;
+
+    public AuthenticationController(AutorizacaoService autorizacaoService, TokenService tokenService) {
         this.autorizacaoService = autorizacaoService;
+        this.tokenService = new TokenService();
     }
 
     @PostMapping("/login") //Faz o login e retorna um token
@@ -53,4 +55,34 @@ public class AuthenticationController {
         autorizacaoService.enviarEmail(data.email());
         return ResponseEntity.ok().build();
     }
+
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ResponseDTO<?>> refresh(@CookieValue("refreshToken") String refreshTokenRaw) {
+
+        TokenPairDTO tokens = autorizacaoService.atualizar(refreshTokenRaw);
+
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.refreshToken())
+                .httpOnly(true).secure(true).sameSite("Strict").path("/auth")
+                .maxAge(Duration.ofDays(7)).build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new ResponseDTO<>("Token renovado", Map.of("accessToken", tokens.accessToken())));
+    }
+
+
+    @PostMapping("/auth/logout")
+    public ResponseEntity<?> logout(@CookieValue("refreshToken") String refreshTokenRaw) {
+
+
+        String hash = tokenService.hashToken(refreshTokenRaw);
+
+        autorizacaoService.logout(hash);
+
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true).secure(true).path("/auth").maxAge(0).build();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, deleteCookie.toString()).build();
+    }
+
 }
