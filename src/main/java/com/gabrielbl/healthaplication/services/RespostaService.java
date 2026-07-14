@@ -298,6 +298,7 @@ public class RespostaService {
 
     public void gerarRespostasAleatorias(int quantidade) {
 
+        if(empresaRepository.findByCnpj("012345678901234")!=null) throw new BusinessException("Avaliacao teste ja realizada.");
         /// Cria as entidades primeiro
         respostaGenerator.generateRandomEmpresa();
 
