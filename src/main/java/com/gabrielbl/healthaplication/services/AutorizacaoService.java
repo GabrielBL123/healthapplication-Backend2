@@ -58,7 +58,7 @@ public class AutorizacaoService {
     }
 
 
-    public LoginResponseDTO autenticarUsuario(AutenticacaoDTO data) {
+    public TokenPairDTO autenticarUsuario(AutenticacaoDTO data) {
 
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
 
@@ -67,36 +67,22 @@ public class AutorizacaoService {
         // cast principal to your Usuario class (implements UserDetails)
         var principal = (Usuario) auth.getPrincipal();
 
-        // Extract roles from GrantedAuthority (optionally remove "ROLE_" prefix for simpler role names)
-        List<String> roles = principal.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .map(r -> r.startsWith("ROLE_") ? r.substring(5) : r)
-                .toList();
+
 
         // generate token (TokenService will also include roles claim)
         var accessToken = tokenService.generateAccessToken(principal);
-        Usuario usuario = usuarioRepository.findByLogin(data.login());
+        var refreshToken = tokenService.generateRefreshToken(principal);
 
 
 
-        //Retorna a avaliacao ativa da empresa, caso exista uma
-        String avaliacaoId;
-        AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findByEmpresaAndIsActive(usuario.getEmpresa(), true);
-        if(avaliacao == null)
-            avaliacaoId =  null;
-        else
-            avaliacaoId = avaliacao.getId().toString();
 
-        //Caso o usuario seja admin, nao retorna a informacao da empresa
-        if(usuario.getRole().equals(UsuarioFuncao.ADMIN)) {
-            return new LoginResponseDTO(accessToken, roles,usuario.getNome(),usuario.getLogin(),
-                    "Usuário Admin","Nao informado", usuario.getId(),
-                    avaliacaoId);
-        }
 
-        return  new LoginResponseDTO(accessToken, roles,usuario.getNome(),usuario.getLogin(),
-                usuario.getEmpresa().getNome(),usuario.getEmpresa().getId().toString(), usuario.getId(),
-                avaliacaoId);
+
+
+        return  new  TokenPairDTO(
+                accessToken,
+                refreshToken
+        );
 
 
     }

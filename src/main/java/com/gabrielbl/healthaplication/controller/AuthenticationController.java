@@ -31,13 +31,19 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login") //Faz o login e retorna um token
-    public ResponseEntity<ResponseDTO<LoginResponseDTO>> login(@RequestBody @Validated AutenticacaoDTO data, HttpServletResponse response){
+    public ResponseEntity<ResponseDTO<?>> login(@RequestBody @Validated AutenticacaoDTO data, HttpServletResponse response){
 
-        LoginResponseDTO loginResponseDTO = autorizacaoService.autenticarUsuario(data);
-        Cookie cookie = autorizacaoService.createJwtCookie(loginResponseDTO.token());
+        TokenPairDTO tokens = autorizacaoService.autenticarUsuario(data);
+
+
+        Cookie cookie = autorizacaoService.createJwtCookie(tokens.refreshToken());
+
+
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(new ResponseDTO<>(loginResponseDTO.token(), loginResponseDTO));
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE,cookie.toString())
+                .body(new ResponseDTO<>("Login Bem Sucedido", Map.of("accessToken", tokens.accessToken())));
     }
 
     @PostMapping("/registrar") //Inativo
@@ -63,8 +69,12 @@ public class AuthenticationController {
         TokenPairDTO tokens = autorizacaoService.atualizar(refreshTokenRaw);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.refreshToken())
-                .httpOnly(true).secure(true).sameSite("Strict").path("/auth")
-                .maxAge(Duration.ofDays(7)).build();
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/auth")
+                .maxAge(Duration.ofDays(7))
+                .build();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
