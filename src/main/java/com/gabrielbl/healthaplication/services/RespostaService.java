@@ -1,6 +1,7 @@
 package com.gabrielbl.healthaplication.services;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -131,9 +132,6 @@ public class RespostaService {
         ));
     }
 
-    // =========================================================================================
-    // ITEM 2: SINALIZAR TÉRMINO (Ação do RH)
-    // =========================================================================================
     @Transactional
     public void sinalizarTermino(UUID avaliacaoId) {
         AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findById(avaliacaoId)
@@ -143,9 +141,6 @@ public class RespostaService {
         avaliacaoMensalRepository.save(avaliacao);
     }
 
-    // =========================================================================================
-    // LÓGICA DE CÁLCULO DE RISCO (NR-1) ATUALIZADA
-    // =========================================================================================
     public RiscoEmpresaDTO calcularRiscoEmpresa(UUID avaliacaoId) {
         AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findById(avaliacaoId)
                 .orElseThrow(() -> new NotFoundException("Avaliação não encontrada"));
@@ -159,7 +154,7 @@ public class RespostaService {
             todasRespostasEmpresa.addAll(respostasSetor);
 
             int totalRespondentes = respostasSetor.size();
-            String nomeDoSetor = setor.getId() != null ? setor.getId().toString() : "Setor Desconhecido";
+            String nomeDoSetor = setor.getSetor() != null ? setor.getSetor().getNome() : "Setor Desconhecido";
 
             if (totalRespondentes < 3) {
                 setoresDTO.add(new RiscoSetorDTO(nomeDoSetor, totalRespondentes, false, 0.0, null, null));
@@ -215,24 +210,18 @@ public class RespostaService {
             double c = formatarDuasCasas((q3 + q4) / 2.0);
             double cAjustada = formatarDuasCasas(6.0 - c);
 
-            // NOVA FÓRMULA: Ponderada (P * 0.6) + (C_ajustada * 0.4)
             double r = formatarDuasCasas((p * 0.6) + (cAjustada * 0.4));
 
             String classificacao = classificarRisco(r);
             String alertaEspecial = null;
 
-            // NOVA REGRA 3: Risco Crítico Direto (P > 4 E C_ajustada < 4)
             if (p > 4.0 && cAjustada < 4.0) {
                 classificacao = "Crítico";
                 alertaEspecial = "Regra 3: Risco Crítico Direto";
-            }
-            // Regra 2: Sofrimento Elevado (P >= 4)
-            else if (p >= 4.0) {
+            } else if (p >= 4.0) {
                 if (!classificacao.equals("Crítico")) classificacao = "Alto";
                 alertaEspecial = "Regra 2: Sofrimento Elevado";
-            }
-            // Regra 1: Risco Oculto (P <= 2 E C_ajustada >= 4)
-            else if (p <= 2.0 && cAjustada >= 4.0) {
+            } else if (p <= 2.0 && cAjustada >= 4.0) {
                 classificacao = "Alto";
                 alertaEspecial = "Regra 1: Risco Oculto";
             }
@@ -259,14 +248,10 @@ public class RespostaService {
         return Math.round(valor * 100.0) / 100.0;
     }
 
-    // =========================================================================================
-    // ITEM 3: EXPORTAÇÃO DE ARQUIVO CSV (Ação do Admin)
-    // =========================================================================================
     public String gerarRelatorioCsv(UUID avaliacaoId) {
         RiscoEmpresaDTO relatorio = calcularRiscoEmpresa(avaliacaoId);
         StringBuilder csv = new StringBuilder();
 
-        // Cabeçalho das colunas do CSV
         csv.append("Empresa;CNPJ;Setor;Total Respondentes;Risco do Setor;Classificacao do Setor;Fator de Risco;Percepcao;Condicao Ajustada;Risco do Fator;Classificacao do Fator;Alerta Automatico\n");
 
         for (RiscoSetorDTO setor : relatorio.setores()) {
@@ -299,7 +284,7 @@ public class RespostaService {
     public void gerarRespostasAleatorias(int quantidade) {
 
         if(empresaRepository.findByCnpj("012345678901234")!=null) throw new BusinessException("Avaliacao teste ja realizada.");
-        /// Cria as entidades primeiro
+
         respostaGenerator.generateRandomEmpresa();
 
         for (int i = 0; i < 6; i++) {
@@ -308,21 +293,15 @@ public class RespostaService {
 
         String link = respostaGenerator.generateRandomAvaliacaoMensal();
 
-        /// Submete as respostas
         for (int i = 0; i < quantidade; i++) {
             RespostaDTO resposta = respostaGenerator.generateRandomResposta();
             submeterResposta(resposta,link);
         }
     }
 
-    // =========================================================================================
-    // EXPORTAÇÃO DE ARQUIVO EXCEL FORMATADO (Múltiplas Abas)
-    // =========================================================================================
     public byte[] gerarRelatorioExcel(UUID avaliacaoId) {
-        // 1. Calcula os riscos de todos os setores usando a sua lógica
         RiscoEmpresaDTO relatorio = calcularRiscoEmpresa(avaliacaoId);
 
-        // 2. Abre o template original
         try (InputStream is = getClass().getResourceAsStream("/template_dashboard.xlsx");
              Workbook workbook = new XSSFWorkbook(is);
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -331,14 +310,12 @@ public class RespostaService {
                 throw new RuntimeException("Template do Excel não encontrado!");
             }
 
-            // Pega a primeira aba para usar como molde
             Sheet abaMolde = workbook.getSheetAt(0);
 
             int indexAba = 0;
             for (RiscoSetorDTO setor : relatorio.setores()) {
                 Sheet abaSetor;
 
-                // Se for o primeiro setor, usa a aba que já existe. Se forem os seguintes, clona o visual do molde!
                 if (indexAba == 0) {
                     abaSetor = abaMolde;
                     workbook.setSheetName(0, setor.setorNome());
@@ -348,45 +325,92 @@ public class RespostaService {
                 }
                 indexAba++;
 
+                // --- INÍCIO: INJEÇÃO AUTOMÁTICA DA FORMATAÇÃO CONDICIONAL VIA JAVA ---
+                SheetConditionalFormatting sheetCF = abaSetor.getSheetConditionalFormatting();
+
+                // Regra Crítico (Vermelho, texto Preto)
+                ConditionalFormattingRule regraCritico = sheetCF.createConditionalFormattingRule(ComparisonOperator.EQUAL, "\"Crítico\"");
+                PatternFormatting fundoCritico = regraCritico.createPatternFormatting();
+                fundoCritico.setFillBackgroundColor(IndexedColors.RED.index);
+                fundoCritico.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
+                regraCritico.createFontFormatting().setFontColorIndex(IndexedColors.BLACK.index);
+
+                // Regra Alto (Laranja, texto Preto)
+                ConditionalFormattingRule regraAlto = sheetCF.createConditionalFormattingRule(ComparisonOperator.EQUAL, "\"Alto\"");
+                PatternFormatting fundoAlto = regraAlto.createPatternFormatting();
+                fundoAlto.setFillBackgroundColor(IndexedColors.LIGHT_ORANGE.index);
+                fundoAlto.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
+                regraAlto.createFontFormatting().setFontColorIndex(IndexedColors.BLACK.index);
+
+                // Regra Médio (Amarelo, texto Preto)
+                ConditionalFormattingRule regraMedio = sheetCF.createConditionalFormattingRule(ComparisonOperator.EQUAL, "\"Médio\"");
+                PatternFormatting fundoMedio = regraMedio.createPatternFormatting();
+                fundoMedio.setFillBackgroundColor(IndexedColors.YELLOW.index);
+                fundoMedio.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
+                regraMedio.createFontFormatting().setFontColorIndex(IndexedColors.BLACK.index);
+
+                // Regra Baixo (Verde, texto Preto)
+                ConditionalFormattingRule regraBaixo = sheetCF.createConditionalFormattingRule(ComparisonOperator.EQUAL, "\"Baixo\"");
+                PatternFormatting fundoBaixo = regraBaixo.createPatternFormatting();
+                fundoBaixo.setFillBackgroundColor(IndexedColors.LIGHT_GREEN.index);
+                fundoBaixo.setFillPattern(PatternFormatting.SOLID_FOREGROUND);
+                regraBaixo.createFontFormatting().setFontColorIndex(IndexedColors.BLACK.index);
+
+                // Aplica nas colunas C, D e E (índices 2, 3 e 4) da linha 12 até a 30 (índices 11 a 29)
+                CellRangeAddress[] regioes = { new CellRangeAddress(11, 29, 2, 4) };
+
+                sheetCF.addConditionalFormatting(regioes, regraCritico);
+                sheetCF.addConditionalFormatting(regioes, regraAlto);
+                sheetCF.addConditionalFormatting(regioes, regraMedio);
+                sheetCF.addConditionalFormatting(regioes, regraBaixo);
+                // --- FIM DA FORMATAÇÃO CONDICIONAL ---
+
                 // --- PREENCHIMENTO DOS DADOS DO SETOR NA ABA CORRESPONDENTE ---
 
-                // CNPJ (Linha 4, Coluna B -> Row index 3, Cell index 1)
-                Row linhaCnpj = abaSetor.getRow(3);
-                if (linhaCnpj == null) linhaCnpj = abaSetor.createRow(3);
+                // 1. CNPJ e Data de Elaboração (Estão na mesma Linha 3 do Excel -> índice 2)
+                Row linhaCnpj = abaSetor.getRow(2);
+                if (linhaCnpj == null) linhaCnpj = abaSetor.createRow(2);
+
+                // Injeta o CNPJ na Coluna B (Índice 1)
                 linhaCnpj.getCell(1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(relatorio.cnpj());
 
-                // Nome do Setor (Linha 5, Coluna B -> Row index 4, Cell index 1)
-                Row linhaSetor = abaSetor.getRow(4);
-                if (linhaSetor == null) linhaSetor = abaSetor.createRow(4);
+                // Cria a data atual formatada (dd/MM/yyyy) e injeta na Coluna D (Índice 3)
+                String dataAtual = java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+                linhaCnpj.getCell(3, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(dataAtual);
+
+                // 2. Nome do Setor (Linha 4 no Excel -> índice 3, Coluna B -> índice 1)
+                Row linhaSetor = abaSetor.getRow(3);
+                if (linhaSetor == null) linhaSetor = abaSetor.createRow(3);
                 linhaSetor.getCell(1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(setor.setorNome());
 
-                // Quantidade de Trabalhadores (Linha 7, Coluna B -> Row index 6, Cell index 1)
-                Row linhaTrab = abaSetor.getRow(6);
-                if (linhaTrab == null) linhaTrab = abaSetor.createRow(6);
+                // 3. Quantidade de Trabalhadores (Linha 6 no Excel -> índice 5, Coluna B -> índice 1)
+                Row linhaTrab = abaSetor.getRow(5);
+                if (linhaTrab == null) linhaTrab = abaSetor.createRow(5);
                 linhaTrab.getCell(1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(setor.totalRespondentes());
 
-                // Se não atingir o limite mínimo de 3 respondentes, protege as informações confidenciais
+                // Se não atingir o limite mínimo, protege os dados mas MANTÉM a tabela
+                // Se não atingir o limite mínimo, protege os dados mas MANTÉM a tabela
                 if (!setor.exibirResultado()) {
-                    Row rowAviso = abaSetor.getRow(12);
-                    if (rowAviso == null) rowAviso = abaSetor.createRow(12);
-                    rowAviso.getCell(1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK)
-                            .setCellValue("DADOS PROTEGIDOS (Mínimo de 3 respondentes no setor para exibir os resultados)");
-                    continue; // Pula para o próximo setor
+                    // Faz um loop passando por todas as 13 linhas da tabela (Índices 11 ao 23)
+                    for (int i = 11; i <= 23; i++) {
+                        Row rowAviso = abaSetor.getRow(i);
+                        if (rowAviso == null) rowAviso = abaSetor.createRow(i);
+
+                        // Sobrescreve e apaga qualquer dado que estivesse salvo no template original
+                        rowAviso.getCell(2, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue("DADOS PROTEGIDOS");
+                        rowAviso.getCell(3, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue("-");
+                        rowAviso.getCell(4, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue("-");
+                    }
+                    continue; // Terminou de limpar a tabela? Pula para o próximo setor!
                 }
 
-                // Se atingir 3 ou mais respostas, preenche a tabela de riscos (Começa na linha 13 -> Row index 12)
-                int linhaAtual = 12;
+                int linhaAtual = 11;
                 for (RiscoFatorDTO fator : setor.fatores()) {
                     Row row = abaSetor.getRow(linhaAtual);
                     if (row == null) row = abaSetor.createRow(linhaAtual);
 
-                    // Coluna C (índice 2): Gravidade (Condição Ajustada)
-                    row.getCell(2, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(fator.condicaoAjustada());
-
-                    // Coluna D (índice 3): Probabilidade (Percepção)
-                    row.getCell(3, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(fator.percepcao());
-
-                    // Coluna E (índice 4): Matriz de Risco (Resultado classificado)
+                    row.getCell(2, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(classificarRisco(fator.condicaoAjustada()));
+                    row.getCell(3, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(classificarRisco(fator.percepcao()));
                     row.getCell(4, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).setCellValue(fator.classificacao());
 
                     linhaAtual++;
