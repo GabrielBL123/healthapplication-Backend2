@@ -25,7 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,7 +39,6 @@ public class AutorizacaoService {
     private final TokenService tokenService;
     private final UsuarioRepository usuarioRepository;
     private final EmpresaRepository empresaRepository;
-    private final AvaliacaoMensalRepository avaliacaoMensalRepository;
     private final RefreshTokenRepository refreshTokenRepository;
 
     public AutorizacaoService(@Lazy AuthenticationManager authenticationManager,
@@ -53,7 +54,6 @@ public class AutorizacaoService {
         this.tokenService = tokenService;
         this.usuarioRepository = usuarioRepository;
         this.empresaRepository = empresaRepository;
-        this.avaliacaoMensalRepository = avaliacaoMensalRepository;
         this.refreshTokenRepository = refreshTokenRepository;
     }
 
@@ -67,15 +67,11 @@ public class AutorizacaoService {
         // cast principal to your Usuario class (implements UserDetails)
         var principal = (Usuario) auth.getPrincipal();
 
-
-
         // generate token (TokenService will also include roles claim)
         var accessToken = tokenService.generateAccessToken(principal);
         var refreshToken = tokenService.generateRefreshToken(principal);
 
-
-
-
+        //também salva o refreshToken no banco de dados
 
 
 
@@ -153,45 +149,50 @@ public class AutorizacaoService {
 
     @Transactional
     public TokenPairDTO atualizar(String refreshTokenRaw) {
-        String login = tokenService.validateToken(refreshTokenRaw);
-        if (login == null) {
+
+        // 1. Verify JWT signature/expiration first
+
+        String usuarioId = tokenService.validateRefreshToken(refreshTokenRaw);
+        if (usuarioId == null) {
             throw new UnauthorizedException("Refresh token inválido ou expirado");
         }
 
+        // 2. Check it exists, isn't revoked, and hasn't expired in the DB
         String tokenHash = tokenService.hashToken(refreshTokenRaw);
         RefreshToken storedToken = refreshTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new UnauthorizedException("Refresh token não reconhecido"));
 
-        if (storedToken.isRevoked() || storedToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new UnauthorizedException("Refresh token revogado ou expirado");
+        if (storedToken.isRevoked()) {
+            throw new UnauthorizedException("Refresh token revogado");
         }
+
+        if(storedToken.getExpiresAt().isBefore(LocalDate.now())){
+            throw new RuntimeException("Refresh token expirado");
+        }
+
+
+        // 3. Rotate: revoke the old one, issue new access + refresh tokens
+
 
         storedToken.setRevoked(true);
         refreshTokenRepository.save(storedToken);
 
-        Usuario usuario = usuarioRepository.findByLogin(login);
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
+
         String newAccessToken = tokenService.generateAccessToken(usuario);
         String newRefreshToken = tokenService.generateRefreshToken(usuario);
-        persistRefreshToken(usuario, newRefreshToken);
+
 
         return new TokenPairDTO(newAccessToken, newRefreshToken);
     }
 
-    private void persistRefreshToken(Usuario usuario, String rawToken) {
-        RefreshToken entity = new RefreshToken();
-        entity.setTokenHash(tokenService.hashToken(rawToken));
-        entity.setUsuario(usuario);
-        entity.setExpiryDate(LocalDateTime.now().plusDays(7));
-        refreshTokenRepository.save(entity);
-    }
+
 
 
     public void logout(String hash) {
 
-        refreshTokenRepository.findByTokenHash(hash).ifPresent(rt -> {
-            rt.setRevoked(true);
-            refreshTokenRepository.save(rt);
-        });
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(hash).orElseThrow();
 
+        refreshTokenRepository.revokeAllByUsuarioId(refreshToken.getUsuario().getId());
     }
 }
