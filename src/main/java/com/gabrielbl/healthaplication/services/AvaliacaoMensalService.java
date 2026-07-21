@@ -12,6 +12,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+// Importação necessária para buscar o usuário logado
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -43,12 +45,7 @@ public class AvaliacaoMensalService {
 
     public void criarEIniciarAvaliacaoMensal(String cnpj) {
 
-
-
-
-
         Empresa empresa = empresaRepository.findByCnpj(cnpj);
-
 
         if(empresa==null) throw new NotFoundException("Empresa nao encontrada");
 
@@ -58,9 +55,6 @@ public class AvaliacaoMensalService {
                 empresa.getId(),true)!=null)){
             throw new AlreadySubmittedException("Avaliacao Mensal ja ativa nessa empresa");
         }
-
-
-
 
         AvaliacaoMensal avaliacaoMensal = new AvaliacaoMensal();
         avaliacaoMensal.setIsActive(true);
@@ -78,16 +72,10 @@ public class AvaliacaoMensalService {
 
         avaliacaoMensal.setAvaliacaoSetores(setores);
 
-
         avaliacaoMensalRepository.save(avaliacaoMensal);
-
-
-
     }
 
-
     public void finalizarAvaliacaoMensal(String cnpj) {
-
 
         Empresa empresa = empresaRepository.findByCnpj(cnpj);
         if(empresa ==null) throw new NotFoundException("Empresa nao encontrada");
@@ -97,9 +85,6 @@ public class AvaliacaoMensalService {
 
         avaliacaoMensal.setIsActive(false);
         avaliacaoMensal.setSubmittedAt(LocalDateTime.now());
-
-
-
     }
 
     public void deletarAvaliacaoMensal(String id) {
@@ -110,22 +95,30 @@ public class AvaliacaoMensalService {
         Empresa empresa =  empresaRepository.findByCnpj(avaliacao.getEmpresa().getCnpj());
         if(empresa==null) throw new NotFoundException("Empresa nao encontrada");
 
-
         avaliacaoMensalRepository.delete(avaliacao);
-
     }
 
-
+    // --- BLOQUEIO DE SEGURANÇA NA LISTAGEM GERAL ---
     public Page<AvaliacaoMensalResponseDTO> getAll(Pageable pageable) {
+        // Captura o usuário autenticado na requisição atual
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
+        Page<AvaliacaoMensal> page;
 
-        Page<AvaliacaoMensal> page = avaliacaoMensalRepository.findAll(pageable);
+        // Verifica se é RH. (Ajuste o getRole().name() conforme o nome exato do seu Enum ou método na classe Usuario)
+        if (usuarioLogado.getRole().name().equals("RH") || usuarioLogado.getRole().name().equals("ROLE_RH")) {
+            // Se for RH, força o banco a trazer SÓ as avaliações da empresa dele
+            page = avaliacaoMensalRepository.findByEmpresa(usuarioLogado.getEmpresa(), pageable);
+        } else {
+            // Se for Admin, traz tudo normalmente
+            page = avaliacaoMensalRepository.findAll(pageable);
+        }
 
         return page.map(a ->
-                        new AvaliacaoMensalResponseDTO(a.getId().toString(),
-                                a.getCreatedAt().toString().replace("T", " "),
-                                a.getIsActive(),
-                                a.getEmpresa().getCnpj()));
+                new AvaliacaoMensalResponseDTO(a.getId().toString(),
+                        a.getCreatedAt().toString().replace("T", " "),
+                        a.getIsActive(),
+                        a.getEmpresa().getCnpj()));
     }
 
     public Page<AvaliacaoMensalResponseDTO> getEmpresaAvaliacoes(Pageable pageable,UUID empresaId) {
@@ -177,7 +170,6 @@ public class AvaliacaoMensalService {
         return linkToken;
     }
 
-
     private String gerarNovoToken(AvaliacaoMensal avaliacaoMensal) {
         // 1. Desativar todos os tokens antigos (opcional, mas recomendado)
         avaliacaoTokenLinkRepository.desativarTodosOsTokens(avaliacaoMensal.getId());
@@ -196,7 +188,6 @@ public class AvaliacaoMensalService {
         return novoToken;
     }
 
-
     public AvaliacaoTokenLink validarToken(String token) {
         return avaliacaoTokenLinkRepository
                 .findByTokenAndIsActive(token, true)
@@ -204,15 +195,11 @@ public class AvaliacaoMensalService {
                 .orElseThrow(() -> new BusinessException("Token inválido ou expirado"));
     }
 
-
-
-
     private void competenciaVencida(String competencia) {
 
         if (competencia == null || !competencia.matches("\\d{8}")) {
             throw new IllegalArgumentException("competencia deve ser no formato YYYYMMDD");
         }
-
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
         LocalDate dataCompetencia = LocalDate.parse(competencia, formatter);
@@ -220,18 +207,29 @@ public class AvaliacaoMensalService {
         if (dataCompetencia.isAfter(LocalDate.now())) throw new  IllegalArgumentException("data invalida");
     }
 
-
+    // --- BLOQUEIO DE SEGURANÇA NOS DETALHES ---
     public AvaliacaoMensalComSetoresResponseDTO getAvaliacao(String avaliacaoId) {
 
         AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findById(UUID.fromString(avaliacaoId))
                 .orElseThrow(() -> new NotFoundException("Avaliacao nao encontrada"));
 
+        // Captura o usuário autenticado na requisição atual
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        // Verifica se é RH. (Ajuste o getRole().name() conforme a sua estrutura de Cargo/Roles)
+        if (usuarioLogado.getRole().name().equals("RH") || usuarioLogado.getRole().name().equals("ROLE_RH")) {
+            // Impede que o RH acesse os detalhes de uma avaliação que possui um ID de empresa diferente da dele
+            if (!avaliacao.getEmpresa().getId().equals(usuarioLogado.getEmpresa().getId())) {
+                throw new BusinessException("Acesso Negado: Esta avaliação pertence a outra empresa.");
+            }
+        }
+
         List<Usuario> funcionarios = avaliacao.getUsuarios();
 
         List<FuncionarioDTO> funcionariosDTO = funcionarios.stream()
                 .map(a -> new FuncionarioDTO(
-                    a.getLogin(), a.getNome(), a.getSetor().getNome(), a.getCargo(),
-                    a.getTempoDeTrabalho(), a.getJornada()
+                        a.getLogin(), a.getNome(), a.getSetor().getNome(), a.getCargo(),
+                        a.getTempoDeTrabalho(), a.getJornada()
                 ))
                 .toList();
 
@@ -246,13 +244,11 @@ public class AvaliacaoMensalService {
                 avaliacao.getAvaliacaoSetores().stream()
                         .map(a ->
                                 new SetorResponseDTO(
-                                    a.getId(), a.getSetor().getNome(),
-                                    a.getAvaliacaoMensal().getEmpresa().getId(),
-                                    a.getAvaliacaoMensal().getEmpresa().getNome())
+                                        a.getId(), a.getSetor().getNome(),
+                                        a.getAvaliacaoMensal().getEmpresa().getId(),
+                                        a.getAvaliacaoMensal().getEmpresa().getNome())
                         )
                         .toList()
-
-
         );
 
         return new AvaliacaoMensalComSetoresResponseDTO(
@@ -262,6 +258,5 @@ public class AvaliacaoMensalService {
                 empresaResponseDTO,
                 funcionariosDTO
         );
-
     }
 }
