@@ -27,7 +27,7 @@ public class AuthenticationController {
 
     public AuthenticationController(AutorizacaoService autorizacaoService, TokenService tokenService) {
         this.autorizacaoService = autorizacaoService;
-        this.tokenService = new TokenService();
+        this.tokenService = tokenService;
     }
 
     @PostMapping("/login") //Faz o login e retorna um token
@@ -64,9 +64,9 @@ public class AuthenticationController {
 
 
     @PostMapping("/refresh")
-    public ResponseEntity<ResponseDTO<?>> refresh(@CookieValue("refreshToken") String refreshTokenRaw) {
+    public ResponseEntity<ResponseDTO<?>> refresh(@CookieValue("refreshToken") String refreshToken) {
 
-        TokenPairDTO tokens = autorizacaoService.atualizar(refreshTokenRaw);
+        TokenPairDTO tokens = autorizacaoService.atualizar(refreshToken);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.refreshToken())
                 .httpOnly(true)
@@ -91,7 +91,12 @@ public class AuthenticationController {
         autorizacaoService.logout(hash);
 
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true).secure(true).path("/auth").maxAge(0).build();
+                .httpOnly(true)
+                .secure(true)
+                .path("/auth")
+                .maxAge(0)
+                .build();
+
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, deleteCookie.toString()).build();
     }
 

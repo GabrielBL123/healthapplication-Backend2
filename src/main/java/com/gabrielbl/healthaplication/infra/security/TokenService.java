@@ -51,7 +51,7 @@ public class TokenService {
 
             List<String> roles = usuario.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
 
-            LocalDate expiresAt = gerarDataExpiracao(ACCESS_TOKEN_EXPIRATION_MINUTES,ChronoUnit.MINUTES);
+            Instant expiresAt = gerarDataExpiracao(ACCESS_TOKEN_EXPIRATION_MINUTES,ChronoUnit.MINUTES);
 
 
             return JWT.create()
@@ -75,7 +75,7 @@ public class TokenService {
 
             List<String> roles = usuario.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
 
-            LocalDate expiresAt = gerarDataExpiracao(REFRESH_TOKEN_EXPIRATION_DAYS,ChronoUnit.DAYS);
+            Instant expiresAt = gerarDataExpiracao(REFRESH_TOKEN_EXPIRATION_DAYS,ChronoUnit.DAYS);
 
 
             String token = JWT.create()
@@ -89,7 +89,6 @@ public class TokenService {
 
             refreshTokenRepository.save(
                     new RefreshToken(
-                            UUID.randomUUID(),
                             hashToken(token),
                             usuario,
                             expiresAt,
@@ -138,8 +137,8 @@ public class TokenService {
         }
     }
 
-    private LocalDate gerarDataExpiracao(long total,ChronoUnit tipo) {
-        return LocalDate.from(Instant.now().plus(total, tipo));
+    private Instant gerarDataExpiracao(long total,ChronoUnit tipo) {
+        return Instant.now().plus(total, tipo);
     }
 
     public String hashToken(String token) {

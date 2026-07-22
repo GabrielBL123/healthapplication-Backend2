@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -89,7 +90,7 @@ public class AutorizacaoService {
 
     public Cookie createJwtCookie(String token) {
 
-        Cookie jwtCookie = new Cookie("jwt", token);
+        Cookie jwtCookie = new Cookie("refreshToken", token);
         jwtCookie.setHttpOnly(true);  // Prevent JS access
         jwtCookie.setSecure(false);   // Set to true in production (HTTPS required)
         jwtCookie.setPath("/");       // Applies to entire app
@@ -166,7 +167,7 @@ public class AutorizacaoService {
             throw new UnauthorizedException("Refresh token revogado");
         }
 
-        if(storedToken.getExpiresAt().isBefore(LocalDate.now())){
+        if(storedToken.getExpiresAt().isBefore(Instant.now())){
             throw new RuntimeException("Refresh token expirado");
         }
 
