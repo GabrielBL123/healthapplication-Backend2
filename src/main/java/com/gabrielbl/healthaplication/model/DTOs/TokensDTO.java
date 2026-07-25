@@ -1,6 +1,6 @@
 package com.gabrielbl.healthaplication.model.DTOs;
 
-public record TokenPairDTO(
+public record TokensDTO(
         String accessToken,
         String refreshToken
 ) {

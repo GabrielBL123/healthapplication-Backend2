@@ -2,7 +2,7 @@ package com.gabrielbl.healthaplication.controller;
 
 
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarUsuarioResponseDTO;
-import com.gabrielbl.healthaplication.model.DTOs.CriarUsuarioDTO;
+import com.gabrielbl.healthaplication.model.DTOs.CriarUsuarioRequestDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.UserResponseDTO;
 import com.gabrielbl.healthaplication.services.UserService;
@@ -34,7 +34,7 @@ public class UsuarioController {
 
     // CREATE
     @PostMapping //Cria um usuario(podendo ser admin, rh ou funcionário padrão, dependendo da Role informada no JSON)
-    public ResponseEntity<ResponseDTO<?>> createUser(@Validated @RequestBody CriarUsuarioDTO data) {
+    public ResponseEntity<ResponseDTO<?>> createUser(@Validated @RequestBody CriarUsuarioRequestDTO data) {
         userService.createUser(data);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseDTO<>("usuario criado", null));
     }

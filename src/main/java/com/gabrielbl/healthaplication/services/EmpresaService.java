@@ -3,7 +3,7 @@ package com.gabrielbl.healthaplication.services;
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 
-import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
+import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaRequestDTO;
 import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.DTOs.SetorResponseDTO;
@@ -40,7 +40,7 @@ public class EmpresaService {
         empresaRepository.save(empresa);
     }
 
-    public void atualizarEmpresa(UUID id, AtualizarEmpresaDTO data) {
+    public void atualizarEmpresa(UUID id, AtualizarEmpresaRequestDTO data) {
         Empresa empresa = empresaRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Empresa nao encontrada"));
 

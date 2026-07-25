@@ -1,9 +1,11 @@
 package com.gabrielbl.healthaplication.model.DTOs;
 
 import java.util.List;
+import java.util.Optional;
 
-public record LoginResponseDTO(
-        String token,
+public record AutenticarDTO(
+        String accessToken,
+        String refreshToken,
         List<String> roles,
         String nome,
         String login,
@@ -11,4 +13,5 @@ public record LoginResponseDTO(
         String empresaID,
         String usuarioID,
         String avaliacaoAtivaId
-) {}
+) {
+}

@@ -3,7 +3,6 @@ package com.gabrielbl.healthaplication.controller;
 
 
 import com.gabrielbl.healthaplication.infra.security.TokenService;
-import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.*;
 import com.gabrielbl.healthaplication.services.AutorizacaoService;
 import jakarta.servlet.http.Cookie;
@@ -31,19 +30,31 @@ public class AuthenticationController {
     }
 
     @PostMapping("/login") //Faz o login e retorna um token
-    public ResponseEntity<ResponseDTO<?>> login(@RequestBody @Validated AutenticacaoDTO data, HttpServletResponse response){
+    public ResponseEntity<ResponseDTO<LoginResponseDTO>> login(@RequestBody @Validated AutenticacaoRequestDTO data, HttpServletResponse response){
 
-        TokenPairDTO tokens = autorizacaoService.autenticarUsuario(data);
+        AutenticarDTO autenticacao = autorizacaoService.autenticar(data);
 
 
-        Cookie cookie = autorizacaoService.createJwtCookie(tokens.refreshToken());
-
+        Cookie cookie = autorizacaoService.createJwtCookie(autenticacao.refreshToken());
 
         response.addCookie(cookie);
 
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(
+                autenticacao.accessToken(),
+                autenticacao.roles(),
+                autenticacao.nome(),
+                autenticacao.login(),
+                autenticacao.empresaNome(),
+                autenticacao.empresaID(),
+                autenticacao.usuarioID(),
+                autenticacao.avaliacaoAtivaId() // null when user has no active evaluation (e.g., admin role)
+
+
+        );
+
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE,cookie.toString())
-                .body(new ResponseDTO<>("Login Bem Sucedido", Map.of("accessToken", tokens.accessToken())));
+                .body(new ResponseDTO<>("Login Bem Sucedido", loginResponseDTO ));
     }
 
     @PostMapping("/registrar") //Inativo
@@ -57,7 +68,7 @@ public class AuthenticationController {
 
 
     @PostMapping("/enviar_link_email") //Envia Link de registro do Rh por e-mail
-    public ResponseEntity<ResponseDTO<?>> enviarLinkDeRegistro(@Validated @RequestBody EnviarConviteDTO data){
+    public ResponseEntity<ResponseDTO<?>> enviarLinkDeRegistro(@Validated @RequestBody EnviarConviteRequestDTO data){
         autorizacaoService.enviarEmail(data.email());
         return ResponseEntity.ok().build();
     }
@@ -66,7 +77,7 @@ public class AuthenticationController {
     @PostMapping("/refresh")
     public ResponseEntity<ResponseDTO<?>> refresh(@CookieValue("refreshToken") String refreshToken) {
 
-        TokenPairDTO tokens = autorizacaoService.atualizar(refreshToken);
+        TokensDTO tokens = autorizacaoService.atualizar(refreshToken);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.refreshToken())
                 .httpOnly(true)

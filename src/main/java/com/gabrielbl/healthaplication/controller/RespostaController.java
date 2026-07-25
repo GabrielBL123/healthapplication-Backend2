@@ -4,11 +4,9 @@ package com.gabrielbl.healthaplication.controller;
 import com.gabrielbl.healthaplication.model.DTOs.*;
 import com.gabrielbl.healthaplication.services.RespostaService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,9 +21,9 @@ public class RespostaController {
 
     //Retorna todos os funcionários que responderam à avaliação ativa de determinada empresa(pelo ID da empresa informado)
     @GetMapping("/{empresa-id}")
-    public ResponseEntity<ResponseDTO<Page<ListaRespostaDTO>>> getTodosQResponderam(@PathVariable String empresaId, Pageable pageable){
+    public ResponseEntity<ResponseDTO<Page<ListaRespostaResponseDTO>>> getTodosQResponderam(@PathVariable String empresaId, Pageable pageable){
 
-        Page<ListaRespostaDTO> respostaData = respostaService.getAllRespostaInfo(empresaId,pageable);
+        Page<ListaRespostaResponseDTO> respostaData = respostaService.getAllRespostaInfo(empresaId,pageable);
 
        return ResponseEntity.ok((new  ResponseDTO<>("",respostaData)));
 

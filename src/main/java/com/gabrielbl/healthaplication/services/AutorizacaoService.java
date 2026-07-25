@@ -6,10 +6,10 @@ import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.exception.UnauthorizedException;
 import com.gabrielbl.healthaplication.infra.security.TokenService;
 import com.gabrielbl.healthaplication.model.*;
-import com.gabrielbl.healthaplication.model.DTOs.AutenticacaoDTO;
-import com.gabrielbl.healthaplication.model.DTOs.LoginResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.AutenticacaoRequestDTO;
+import com.gabrielbl.healthaplication.model.DTOs.AutenticarDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarDTO;
-import com.gabrielbl.healthaplication.model.DTOs.TokenPairDTO;
+import com.gabrielbl.healthaplication.model.DTOs.TokensDTO;
 import com.gabrielbl.healthaplication.repository.AvaliacaoMensalRepository;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.RefreshTokenRepository;
@@ -26,11 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AutorizacaoService {
@@ -41,6 +37,7 @@ public class AutorizacaoService {
     private final UsuarioRepository usuarioRepository;
     private final EmpresaRepository empresaRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final AvaliacaoMensalRepository avaliacaoMensalRepository;
 
     public AutorizacaoService(@Lazy AuthenticationManager authenticationManager,
                               JavaMailSender mailSender,
@@ -56,10 +53,11 @@ public class AutorizacaoService {
         this.usuarioRepository = usuarioRepository;
         this.empresaRepository = empresaRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.avaliacaoMensalRepository = avaliacaoMensalRepository;
     }
 
 
-    public TokenPairDTO autenticarUsuario(AutenticacaoDTO data) {
+    public AutenticarDTO autenticar(AutenticacaoRequestDTO data) {
 
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
 
@@ -68,17 +66,64 @@ public class AutorizacaoService {
         // cast principal to your Usuario class (implements UserDetails)
         var principal = (Usuario) auth.getPrincipal();
 
+
         // generate token (TokenService will also include roles claim)
         var accessToken = tokenService.generateAccessToken(principal);
         var refreshToken = tokenService.generateRefreshToken(principal);
-
         //também salva o refreshToken no banco de dados
 
+        List<String> roles = principal
+                .getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(String::valueOf)
+                .toList();
 
 
-        return  new  TokenPairDTO(
+
+
+        String avaliacaoId = null;
+        String empresaId = null;
+        String empresaNome = null;
+
+
+
+
+        if(principal.getRole() != UsuarioFuncao.ADMIN){
+            //if is an RH, return avalicaoId, empresaId and empresaNome
+
+            empresaId = empresaRepository.findById(principal.getEmpresa().getId())
+                    .map(Empresa::getId)
+                    .map(String::valueOf)
+                    .orElse(null);
+
+            empresaNome = empresaRepository.findById(principal.getEmpresa().getId())
+                    .map(Empresa::getNome)
+                    .orElse(null);
+
+            avaliacaoId = avaliacaoMensalRepository
+                    .findFirstByEmpresaAndIsActiveOrderByCreatedAtDesc(principal.getEmpresa(),true)
+                    .map(AvaliacaoMensal::getId)
+                    .map(String::valueOf)
+                    .orElse(null);
+
+        }
+
+
+
+
+
+
+        return  new AutenticarDTO(
                 accessToken,
-                refreshToken
+                refreshToken,
+                roles,
+                principal.getNome(),
+                principal.getLogin(),
+                empresaNome,
+                empresaId,
+                principal.getId(),
+                avaliacaoId
         );
 
 
@@ -149,7 +194,7 @@ public class AutorizacaoService {
 
 
     @Transactional
-    public TokenPairDTO atualizar(String refreshTokenRaw) {
+    public TokensDTO atualizar(String refreshTokenRaw) {
 
         // 1. Verify JWT signature/expiration first
 
@@ -184,7 +229,7 @@ public class AutorizacaoService {
         String newRefreshToken = tokenService.generateRefreshToken(usuario);
 
 
-        return new TokenPairDTO(newAccessToken, newRefreshToken);
+        return new TokensDTO(newAccessToken, newRefreshToken);
     }
 
 

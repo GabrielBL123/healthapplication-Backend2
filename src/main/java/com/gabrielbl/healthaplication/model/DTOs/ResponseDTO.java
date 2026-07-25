@@ -13,5 +13,5 @@ public class ResponseDTO<T> {
         this.data = data;
     }
 
-    // Getters and Setters
+
 }
