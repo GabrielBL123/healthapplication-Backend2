@@ -1,11 +1,10 @@
 package com.gabrielbl.healthaplication.controller;
 
-import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaDTO;
+import com.gabrielbl.healthaplication.model.DTOs.AtualizarEmpresaRequestDTO;
 import com.gabrielbl.healthaplication.model.DTOs.EmpresaResponseDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarEmpresaDTO;
 import com.gabrielbl.healthaplication.model.DTOs.ResponseDTO;
 import com.gabrielbl.healthaplication.services.EmpresaService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -42,7 +41,7 @@ public class EmpresaController {
 
 
     @PutMapping("/{id}") //Atualiza uma empresa(pelo seu ID)
-    public ResponseEntity<ResponseDTO<?>> atualizarEmpresa(@PathVariable UUID id, @Validated @RequestBody AtualizarEmpresaDTO data){
+    public ResponseEntity<ResponseDTO<?>> atualizarEmpresa(@PathVariable UUID id, @Validated @RequestBody AtualizarEmpresaRequestDTO data){
         empresaService.atualizarEmpresa(id, data);
         return ResponseEntity.ok(new ResponseDTO<>("Empresa atualizada com sucesso", null));
     }

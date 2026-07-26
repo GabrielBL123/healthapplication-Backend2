@@ -6,10 +6,10 @@ import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.exception.UnauthorizedException;
 import com.gabrielbl.healthaplication.infra.security.TokenService;
 import com.gabrielbl.healthaplication.model.*;
-import com.gabrielbl.healthaplication.model.DTOs.AutenticacaoDTO;
-import com.gabrielbl.healthaplication.model.DTOs.LoginResponseDTO;
+import com.gabrielbl.healthaplication.model.DTOs.AutenticacaoRequestDTO;
+import com.gabrielbl.healthaplication.model.DTOs.AutenticarDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarDTO;
-import com.gabrielbl.healthaplication.model.DTOs.TokenPairDTO;
+import com.gabrielbl.healthaplication.model.DTOs.TokensDTO;
 import com.gabrielbl.healthaplication.repository.AvaliacaoMensalRepository;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
 import com.gabrielbl.healthaplication.repository.RefreshTokenRepository;
@@ -25,9 +25,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AutorizacaoService {
@@ -37,8 +36,8 @@ public class AutorizacaoService {
     private final TokenService tokenService;
     private final UsuarioRepository usuarioRepository;
     private final EmpresaRepository empresaRepository;
-    private final AvaliacaoMensalRepository avaliacaoMensalRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final AvaliacaoMensalRepository avaliacaoMensalRepository;
 
     public AutorizacaoService(@Lazy AuthenticationManager authenticationManager,
                               JavaMailSender mailSender,
@@ -53,12 +52,12 @@ public class AutorizacaoService {
         this.tokenService = tokenService;
         this.usuarioRepository = usuarioRepository;
         this.empresaRepository = empresaRepository;
-        this.avaliacaoMensalRepository = avaliacaoMensalRepository;
         this.refreshTokenRepository = refreshTokenRepository;
+        this.avaliacaoMensalRepository = avaliacaoMensalRepository;
     }
 
 
-    public LoginResponseDTO autenticarUsuario(AutenticacaoDTO data) {
+    public AutenticarDTO autenticar(AutenticacaoRequestDTO data) {
 
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
 
@@ -67,36 +66,65 @@ public class AutorizacaoService {
         // cast principal to your Usuario class (implements UserDetails)
         var principal = (Usuario) auth.getPrincipal();
 
-        // Extract roles from GrantedAuthority (optionally remove "ROLE_" prefix for simpler role names)
-        List<String> roles = principal.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .map(r -> r.startsWith("ROLE_") ? r.substring(5) : r)
-                .toList();
 
         // generate token (TokenService will also include roles claim)
         var accessToken = tokenService.generateAccessToken(principal);
-        Usuario usuario = usuarioRepository.findByLogin(data.login());
+        var refreshToken = tokenService.generateRefreshToken(principal);
+        //também salva o refreshToken no banco de dados
+
+        List<String> roles = principal
+                .getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(String::valueOf)
+                .toList();
 
 
 
-        //Retorna a avaliacao ativa da empresa, caso exista uma
-        String avaliacaoId;
-        AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findByEmpresaAndIsActive(usuario.getEmpresa(), true);
-        if(avaliacao == null)
-            avaliacaoId =  null;
-        else
-            avaliacaoId = avaliacao.getId().toString();
 
-        //Caso o usuario seja admin, nao retorna a informacao da empresa
-        if(usuario.getRole().equals(UsuarioFuncao.ADMIN)) {
-            return new LoginResponseDTO(accessToken, roles,usuario.getNome(),usuario.getLogin(),
-                    "Usuário Admin","Nao informado", usuario.getId(),
-                    avaliacaoId);
+        String avaliacaoId = null;
+        String empresaId = null;
+        String empresaNome = null;
+
+
+
+
+        if(principal.getRole() != UsuarioFuncao.ADMIN){
+            //if is an RH, return avalicaoId, empresaId and empresaNome
+
+            empresaId = empresaRepository.findById(principal.getEmpresa().getId())
+                    .map(Empresa::getId)
+                    .map(String::valueOf)
+                    .orElse(null);
+
+            empresaNome = empresaRepository.findById(principal.getEmpresa().getId())
+                    .map(Empresa::getNome)
+                    .orElse(null);
+
+            avaliacaoId = avaliacaoMensalRepository
+                    .findFirstByEmpresaAndIsActiveOrderByCreatedAtDesc(principal.getEmpresa(),true)
+                    .map(AvaliacaoMensal::getId)
+                    .map(String::valueOf)
+                    .orElse(null);
+
         }
 
-        return  new LoginResponseDTO(accessToken, roles,usuario.getNome(),usuario.getLogin(),
-                usuario.getEmpresa().getNome(),usuario.getEmpresa().getId().toString(), usuario.getId(),
-                avaliacaoId);
+
+
+
+
+
+        return  new AutenticarDTO(
+                accessToken,
+                refreshToken,
+                roles,
+                principal.getNome(),
+                principal.getLogin(),
+                empresaNome,
+                empresaId,
+                principal.getId(),
+                avaliacaoId
+        );
 
 
     }
@@ -107,7 +135,7 @@ public class AutorizacaoService {
 
     public Cookie createJwtCookie(String token) {
 
-        Cookie jwtCookie = new Cookie("jwt", token);
+        Cookie jwtCookie = new Cookie("refreshToken", token);
         jwtCookie.setHttpOnly(true);  // Prevent JS access
         jwtCookie.setSecure(false);   // Set to true in production (HTTPS required)
         jwtCookie.setPath("/");       // Applies to entire app
@@ -166,46 +194,51 @@ public class AutorizacaoService {
 
 
     @Transactional
-    public TokenPairDTO atualizar(String refreshTokenRaw) {
-        String login = tokenService.validateToken(refreshTokenRaw);
-        if (login == null) {
+    public TokensDTO atualizar(String refreshTokenRaw) {
+
+        // 1. Verify JWT signature/expiration first
+
+        String usuarioId = tokenService.validateRefreshToken(refreshTokenRaw);
+        if (usuarioId == null) {
             throw new UnauthorizedException("Refresh token inválido ou expirado");
         }
 
+        // 2. Check it exists, isn't revoked, and hasn't expired in the DB
         String tokenHash = tokenService.hashToken(refreshTokenRaw);
         RefreshToken storedToken = refreshTokenRepository.findByTokenHash(tokenHash)
                 .orElseThrow(() -> new UnauthorizedException("Refresh token não reconhecido"));
 
-        if (storedToken.isRevoked() || storedToken.getExpiryDate().isBefore(LocalDateTime.now())) {
-            throw new UnauthorizedException("Refresh token revogado ou expirado");
+        if (storedToken.isRevoked()) {
+            throw new UnauthorizedException("Refresh token revogado");
         }
+
+        if(storedToken.getExpiresAt().isBefore(Instant.now())){
+            throw new RuntimeException("Refresh token expirado");
+        }
+
+
+        // 3. Rotate: revoke the old one, issue new access + refresh tokens
+
 
         storedToken.setRevoked(true);
         refreshTokenRepository.save(storedToken);
 
-        Usuario usuario = usuarioRepository.findByLogin(login);
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElseThrow();
+
         String newAccessToken = tokenService.generateAccessToken(usuario);
         String newRefreshToken = tokenService.generateRefreshToken(usuario);
-        persistRefreshToken(usuario, newRefreshToken);
 
-        return new TokenPairDTO(newAccessToken, newRefreshToken);
+
+        return new TokensDTO(newAccessToken, newRefreshToken);
     }
 
-    private void persistRefreshToken(Usuario usuario, String rawToken) {
-        RefreshToken entity = new RefreshToken();
-        entity.setTokenHash(tokenService.hashToken(rawToken));
-        entity.setUsuario(usuario);
-        entity.setExpiryDate(LocalDateTime.now().plusDays(7));
-        refreshTokenRepository.save(entity);
-    }
+
 
 
     public void logout(String hash) {
 
-        refreshTokenRepository.findByTokenHash(hash).ifPresent(rt -> {
-            rt.setRevoked(true);
-            refreshTokenRepository.save(rt);
-        });
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(hash).orElseThrow();
 
+        refreshTokenRepository.revokeAllByUsuarioId(refreshToken.getUsuario().getId());
     }
 }

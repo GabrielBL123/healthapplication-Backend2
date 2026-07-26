@@ -35,7 +35,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         if(token != null){
             try {
 
-                var userId = tokenService.validateToken(token);
+                var userId = tokenService.validateAccessToken(token);
                 Usuario user = usuarioRepository.findById(userId).orElse(null);
 
                 if(user != null){
@@ -49,7 +49,7 @@ public class SecurityFilter extends OncePerRequestFilter {
 
             catch (Exception e) {
                 // don't block the request if token is invalid; just continue without authentication
-                logger.warn("Invalid token for request {}: {}");
+                logger.warn("Invalid token for request {}: {}"+ request.getRequestURI() + e.getMessage());
 
 
             }
@@ -73,7 +73,7 @@ public class SecurityFilter extends OncePerRequestFilter {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if ("jwt".equals(cookie.getName())) {
+                if ("refreshToken".equals(cookie.getName())) {
                     return cookie.getValue();
                 }
             }

@@ -3,9 +3,8 @@ package com.gabrielbl.healthaplication.services;
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.DTOs.AtualizarUsuarioResponseDTO;
-import com.gabrielbl.healthaplication.model.DTOs.CriarUsuarioDTO;
+import com.gabrielbl.healthaplication.model.DTOs.CriarUsuarioRequestDTO;
 import com.gabrielbl.healthaplication.model.Empresa;
-import com.gabrielbl.healthaplication.model.Setor;
 import com.gabrielbl.healthaplication.model.Usuario;
 import com.gabrielbl.healthaplication.model.DTOs.UserResponseDTO;
 import com.gabrielbl.healthaplication.repository.EmpresaRepository;
@@ -49,7 +48,7 @@ public class UserService {
         return usuarioRepository.findAll(pageable).map(this::toDTO);
     }
 
-    public void createUser(CriarUsuarioDTO data) {
+    public void createUser(CriarUsuarioRequestDTO data) {
         if (usuarioRepository.findByLogin(data.login()) != null)
             throw new AlreadySubmittedException("Login ja existente");
 

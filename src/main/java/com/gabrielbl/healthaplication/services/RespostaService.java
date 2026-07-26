@@ -116,7 +116,7 @@ public class RespostaService {
         return new RespostaInfoEmpresaDTO(empresa.getNome(), empresa.getCnpj(), nomeSetor);
     }
 
-    public Page<ListaRespostaDTO> getAllRespostaInfo(String empresaId, Pageable pageable) {
+    public Page<ListaRespostaResponseDTO> getAllRespostaInfo(String empresaId, Pageable pageable) {
         Empresa empresa = empresaRepository.findById(UUID.fromString(empresaId)).orElseThrow(
                 () -> new NotFoundException("Empresa nao encontrada")
         );
@@ -126,7 +126,7 @@ public class RespostaService {
 
         Page<Usuario> pageUsuarios = usuarioRepository.findByAvaliacaoMensal(avaliacaoMensal, pageable);
 
-        return pageUsuarios.map(a -> new ListaRespostaDTO(
+        return pageUsuarios.map(a -> new ListaRespostaResponseDTO(
                 a.getNome(), a.getLogin(), a.getCargo(), a.getSetor().getNome(),
                 a.getTempoDeTrabalho(), a.getJornada(), LocalDateTime.now()
         ));

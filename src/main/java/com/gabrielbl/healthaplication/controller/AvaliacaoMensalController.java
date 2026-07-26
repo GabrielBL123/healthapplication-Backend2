@@ -47,7 +47,7 @@ public class AvaliacaoMensalController {
     }
 
     @PostMapping("/gerar-link") //POST pois recebe um JSON
-    public ResponseEntity<ResponseDTO<?>> gerarLink(@Validated @RequestBody GerarLinkDTO data) {
+    public ResponseEntity<ResponseDTO<?>> gerarLink(@Validated @RequestBody GerarLinkRequestDTO data) {
 
         // O seu service cria o token único no banco de dados e te devolve ele
         String tokenGerado = avaliacaoService.getLinkAvaliacao(data.cnpj());

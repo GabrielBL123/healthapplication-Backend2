@@ -7,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
-public record CriarUsuarioDTO(
+public record CriarUsuarioRequestDTO(
         @NotBlank String login,
         @NotBlank String nome,
         @NotBlank String password,

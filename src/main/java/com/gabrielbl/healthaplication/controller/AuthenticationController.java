@@ -3,7 +3,6 @@ package com.gabrielbl.healthaplication.controller;
 
 
 import com.gabrielbl.healthaplication.infra.security.TokenService;
-import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.*;
 import com.gabrielbl.healthaplication.services.AutorizacaoService;
 import jakarta.servlet.http.Cookie;
@@ -27,17 +26,35 @@ public class AuthenticationController {
 
     public AuthenticationController(AutorizacaoService autorizacaoService, TokenService tokenService) {
         this.autorizacaoService = autorizacaoService;
-        this.tokenService = new TokenService();
+        this.tokenService = tokenService;
     }
 
     @PostMapping("/login") //Faz o login e retorna um token
-    public ResponseEntity<ResponseDTO<LoginResponseDTO>> login(@RequestBody @Validated AutenticacaoDTO data, HttpServletResponse response){
+    public ResponseEntity<ResponseDTO<LoginResponseDTO>> login(@RequestBody @Validated AutenticacaoRequestDTO data, HttpServletResponse response){
 
-        LoginResponseDTO loginResponseDTO = autorizacaoService.autenticarUsuario(data);
-        Cookie cookie = autorizacaoService.createJwtCookie(loginResponseDTO.token());
+        AutenticarDTO autenticacao = autorizacaoService.autenticar(data);
+
+
+        Cookie cookie = autorizacaoService.createJwtCookie(autenticacao.refreshToken());
+
         response.addCookie(cookie);
 
-        return ResponseEntity.ok(new ResponseDTO<>(loginResponseDTO.token(), loginResponseDTO));
+        LoginResponseDTO loginResponseDTO = new LoginResponseDTO(
+                autenticacao.accessToken(),
+                autenticacao.roles(),
+                autenticacao.nome(),
+                autenticacao.login(),
+                autenticacao.empresaNome(), //null if the user is an admin
+                autenticacao.empresaID(), //null if the user is an admin
+                autenticacao.usuarioID(),
+                autenticacao.avaliacaoAtivaId() // null when user has no active evaluation (e.g., admin role)
+
+
+        );
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE,cookie.toString())
+                .body(new ResponseDTO<>("Login Bem Sucedido", loginResponseDTO ));
     }
 
     @PostMapping("/registrar") //Inativo
@@ -51,20 +68,24 @@ public class AuthenticationController {
 
 
     @PostMapping("/enviar_link_email") //Envia Link de registro do Rh por e-mail
-    public ResponseEntity<ResponseDTO<?>> enviarLinkDeRegistro(@Validated @RequestBody EnviarConviteDTO data){
+    public ResponseEntity<ResponseDTO<?>> enviarLinkDeRegistro(@Validated @RequestBody EnviarConviteRequestDTO data){
         autorizacaoService.enviarEmail(data.email());
         return ResponseEntity.ok().build();
     }
 
 
     @PostMapping("/refresh")
-    public ResponseEntity<ResponseDTO<?>> refresh(@CookieValue("refreshToken") String refreshTokenRaw) {
+    public ResponseEntity<ResponseDTO<?>> refresh(@CookieValue("refreshToken") String refreshToken) {
 
-        TokenPairDTO tokens = autorizacaoService.atualizar(refreshTokenRaw);
+        TokensDTO tokens = autorizacaoService.atualizar(refreshToken);
 
         ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.refreshToken())
-                .httpOnly(true).secure(true).sameSite("Strict").path("/auth")
-                .maxAge(Duration.ofDays(7)).build();
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/auth")
+                .maxAge(Duration.ofDays(7))
+                .build();
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
@@ -81,7 +102,12 @@ public class AuthenticationController {
         autorizacaoService.logout(hash);
 
         ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true).secure(true).path("/auth").maxAge(0).build();
+                .httpOnly(true)
+                .secure(true)
+                .path("/auth")
+                .maxAge(0)
+                .build();
+
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, deleteCookie.toString()).build();
     }
 
