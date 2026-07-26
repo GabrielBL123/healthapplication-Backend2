@@ -44,8 +44,8 @@ public class AuthenticationController {
                 autenticacao.roles(),
                 autenticacao.nome(),
                 autenticacao.login(),
-                autenticacao.empresaNome(),
-                autenticacao.empresaID(),
+                autenticacao.empresaNome(), //null if the user is an admin
+                autenticacao.empresaID(), //null if the user is an admin
                 autenticacao.usuarioID(),
                 autenticacao.avaliacaoAtivaId() // null when user has no active evaluation (e.g., admin role)
 

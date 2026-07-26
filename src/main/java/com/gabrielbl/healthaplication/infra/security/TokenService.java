@@ -58,6 +58,7 @@ public class TokenService {
                     .withIssuer("healthaplication-api")
                     .withClaim("roles", roles)
                     .withClaim("type", "access")
+                    .withJWTId(UUID.randomUUID().toString())
                     .withSubject(usuario.getId())
                     .withClaim("login", usuario.getLogin())
                     .withExpiresAt(Instant.from(expiresAt))
@@ -82,6 +83,7 @@ public class TokenService {
                     .withIssuer("healthaplication-api")
                     .withClaim("roles", roles)
                     .withClaim("type", "refresh")
+                    .withJWTId(UUID.randomUUID().toString())
                     .withSubject(usuario.getId())
                     .withExpiresAt(Instant.from(expiresAt))
                     .sign(algorithm);
