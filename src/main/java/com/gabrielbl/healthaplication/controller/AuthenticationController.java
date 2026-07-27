@@ -24,9 +24,21 @@ public class AuthenticationController {
 
     private final TokenService tokenService;
 
+    private static final Duration REFRESH_TOKEN_MAX_AGE = Duration.ofDays(7);
+
     public AuthenticationController(AutorizacaoService autorizacaoService, TokenService tokenService) {
         this.autorizacaoService = autorizacaoService;
         this.tokenService = tokenService;
+    }
+
+    private ResponseCookie buildRefreshCookie(String value,Duration maxAge){
+        return ResponseCookie.from("refreshToken", value)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")// safest: matches every request path regardless of context-path
+                .maxAge(maxAge)
+                .build();
     }
 
     @PostMapping("/login") //Faz o login e retorna um token
@@ -35,9 +47,9 @@ public class AuthenticationController {
         AutenticarDTO autenticacao = autorizacaoService.autenticar(data);
 
 
-        Cookie cookie = autorizacaoService.createJwtCookie(autenticacao.refreshToken());
+        ResponseCookie cookie = buildRefreshCookie(autenticacao.refreshToken(), REFRESH_TOKEN_MAX_AGE);
 
-        response.addCookie(cookie);
+
 
         LoginResponseDTO loginResponseDTO = new LoginResponseDTO(
                 autenticacao.accessToken(),
@@ -79,13 +91,7 @@ public class AuthenticationController {
 
         TokensDTO tokens = autorizacaoService.atualizar(refreshToken);
 
-        ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens.refreshToken())
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
-                .path("/auth")
-                .maxAge(Duration.ofDays(7))
-                .build();
+        ResponseCookie cookie = buildRefreshCookie(tokens.refreshToken(), REFRESH_TOKEN_MAX_AGE);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
@@ -93,7 +99,7 @@ public class AuthenticationController {
     }
 
 
-    @PostMapping("/auth/logout")
+    @PostMapping("/logout")
     public ResponseEntity<?> logout(@CookieValue("refreshToken") String refreshTokenRaw) {
 
 
@@ -101,14 +107,11 @@ public class AuthenticationController {
 
         autorizacaoService.logout(hash);
 
-        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(true)
-                .path("/auth")
-                .maxAge(0)
-                .build();
+        ResponseCookie deleteCookie = buildRefreshCookie("", Duration.ZERO);
 
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, deleteCookie.toString()).build();
+
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,
+                deleteCookie.toString()).build();
     }
 
 }

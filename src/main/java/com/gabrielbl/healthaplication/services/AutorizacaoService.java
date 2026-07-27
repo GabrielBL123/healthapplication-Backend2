@@ -137,8 +137,8 @@ public class AutorizacaoService {
 
         Cookie jwtCookie = new Cookie("refreshToken", token);
         jwtCookie.setHttpOnly(true);  // Prevent JS access
-        jwtCookie.setSecure(false);   // Set to true in production (HTTPS required)
-        jwtCookie.setPath("/");       // Applies to entire app
+        jwtCookie.setSecure(true);   // Set to true in production (HTTPS required)
+        jwtCookie.setPath("/api/auth");
         jwtCookie.setMaxAge(3600);    // 1 hour expiry (adjust to match JWT)
 
         return jwtCookie;
@@ -235,6 +235,7 @@ public class AutorizacaoService {
 
 
 
+    @Transactional
     public void logout(String hash) {
 
         RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(hash).orElseThrow();
