@@ -4,12 +4,14 @@ package com.gabrielbl.healthaplication.controller;
 
 import com.gabrielbl.healthaplication.infra.security.TokenService;
 import com.gabrielbl.healthaplication.model.DTOs.*;
+import com.gabrielbl.healthaplication.model.Usuario;
 import com.gabrielbl.healthaplication.services.AutorizacaoService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -96,6 +98,17 @@ public class AuthenticationController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new ResponseDTO<>("Token renovado", Map.of("accessToken", tokens.accessToken())));
+    }
+
+
+    @GetMapping("/me")
+    public ResponseEntity<ResponseDTO<PerfilDTO>> me() {
+        var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof Usuario usuarioLogado)) {
+            return ResponseEntity.status(401).body(new ResponseDTO<>("Não autenticado", null));
+        }
+        PerfilDTO perfil = autorizacaoService.buscarPerfilUsuario(usuarioLogado);
+        return ResponseEntity.ok(new ResponseDTO<>("Perfil do usuário", perfil));
     }
 
 

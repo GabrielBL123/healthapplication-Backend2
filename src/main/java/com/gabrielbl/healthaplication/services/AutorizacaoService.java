@@ -8,6 +8,7 @@ import com.gabrielbl.healthaplication.infra.security.TokenService;
 import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.AutenticacaoRequestDTO;
 import com.gabrielbl.healthaplication.model.DTOs.AutenticarDTO;
+import com.gabrielbl.healthaplication.model.DTOs.PerfilDTO;
 import com.gabrielbl.healthaplication.model.DTOs.RegistrarDTO;
 import com.gabrielbl.healthaplication.model.DTOs.TokensDTO;
 import com.gabrielbl.healthaplication.repository.AvaliacaoMensalRepository;
@@ -72,6 +73,26 @@ public class AutorizacaoService {
         var refreshToken = tokenService.generateRefreshToken(principal);
         //também salva o refreshToken no banco de dados
 
+        PerfilDTO perfil = resolverPerfilInfo(principal);
+
+        return new AutenticarDTO(
+                accessToken,
+                refreshToken,
+                perfil.roles(),
+                perfil.nome(),
+                perfil.login(),
+                perfil.empresaNome(),
+                perfil.empresaID(),
+                perfil.usuarioID(),
+                perfil.avaliacaoAtivaId()
+        );
+    }
+
+    public PerfilDTO buscarPerfilUsuario(Usuario usuario) {
+        return resolverPerfilInfo(usuario);
+    }
+
+    private PerfilDTO resolverPerfilInfo(Usuario principal) {
         List<String> roles = principal
                 .getAuthorities()
                 .stream()
@@ -79,17 +100,11 @@ public class AutorizacaoService {
                 .map(String::valueOf)
                 .toList();
 
-
-
-
         String avaliacaoId = null;
         String empresaId = null;
         String empresaNome = null;
 
-
-
-
-        if(principal.getRole() != UsuarioFuncao.ADMIN){
+        if (principal.getRole() != UsuarioFuncao.ADMIN) {
             //if is an RH, return avalicaoId, empresaId and empresaNome
 
             empresaId = empresaRepository.findById(principal.getEmpresa().getId())
@@ -102,21 +117,13 @@ public class AutorizacaoService {
                     .orElse(null);
 
             avaliacaoId = avaliacaoMensalRepository
-                    .findFirstByEmpresaAndIsActiveOrderByCreatedAtDesc(principal.getEmpresa(),true)
+                    .findFirstByEmpresaAndIsActiveOrderByCreatedAtDesc(principal.getEmpresa(), true)
                     .map(AvaliacaoMensal::getId)
                     .map(String::valueOf)
                     .orElse(null);
-
         }
 
-
-
-
-
-
-        return  new AutenticarDTO(
-                accessToken,
-                refreshToken,
+        return new PerfilDTO(
                 roles,
                 principal.getNome(),
                 principal.getLogin(),
@@ -125,8 +132,6 @@ public class AutorizacaoService {
                 principal.getId(),
                 avaliacaoId
         );
-
-
     }
 
 
