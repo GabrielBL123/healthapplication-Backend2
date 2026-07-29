@@ -28,7 +28,10 @@ public class SecurityFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal( HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal( HttpServletRequest request,
+                                     HttpServletResponse response,
+                                     FilterChain filterChain)
+            throws ServletException, IOException {
 
 
         var token = this.recoverToken(request);
@@ -50,6 +53,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             catch (Exception e) {
                 // don't block the request if token is invalid; just continue without authentication
                 logger.warn("Invalid token for request {}: {}"+ request.getRequestURI() + e.getMessage());
+                
 
 
             }

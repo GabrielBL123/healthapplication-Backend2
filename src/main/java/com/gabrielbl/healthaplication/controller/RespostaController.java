@@ -49,6 +49,14 @@ public class RespostaController {
         return ResponseEntity.ok(new ResponseDTO<>("Resposta submetido com sucesso",null));
     }
 
+    @DeleteMapping("/responder/{token-id}")
+    public ResponseEntity<ResponseDTO<?>> deleteResposta(@PathVariable("token-id") String tokenId){
+
+        respostaService.deletar(tokenId);
+
+        return ResponseEntity.ok(new ResponseDTO<>("Resposta deletada",null));
+    }
+
 
 
 

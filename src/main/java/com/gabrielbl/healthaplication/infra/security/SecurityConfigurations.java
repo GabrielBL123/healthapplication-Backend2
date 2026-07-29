@@ -36,24 +36,33 @@ public class SecurityConfigurations {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         // Preflight requests must always pass
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/**").permitAll()
+                        //    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         // Public auth endpoints
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/registrar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/enviar_link_email").hasRole("ADMIN")
 
                         // Admin-only management endpoints
-                        .requestMatchers(HttpMethod.POST, "/admin/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/admin/**").hasRole("ADMIN")
 
                         // Company / sector registration (public so new companies can sign up)
                         .requestMatchers(HttpMethod.POST, "/empresa/criar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/setores/criar").permitAll()
                         .requestMatchers(HttpMethod.GET, "/empresa").permitAll()
 
+                        //RH
+                        .requestMatchers(HttpMethod.POST, "/empresa/**").hasRole("RH")
+
+
+                        .requestMatchers(HttpMethod.POST, "/auth/me").hasAnyRole("ADMIN","RH")
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").hasAnyRole("ADMIN","RH")
+
                         // Authenticated-only access for everything else
                         .anyRequest().authenticated()
+
+
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -89,6 +98,7 @@ public class SecurityConfigurations {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
 
 
 }

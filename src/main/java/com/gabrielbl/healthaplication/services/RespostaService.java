@@ -424,4 +424,18 @@ public class RespostaService {
             throw new RuntimeException("Erro ao gerar o Excel formatado: " + e.getMessage());
         }
     }
+
+    public void deletar(String tokenId) {
+
+        Resposta resposta = respostaRepository.findById(UUID.fromString(tokenId))
+                .orElseThrow(() -> new NotFoundException("Resposta nao encontrada"));
+
+        if(!resposta.getAvaliacaoSetor().getAvaliacaoMensal().getIsActive()){
+            throw new BusinessException("Avaliacao ja Finalizada");
+        }
+        else respostaRepository.delete(resposta);
+
+
+
+    }
 }
