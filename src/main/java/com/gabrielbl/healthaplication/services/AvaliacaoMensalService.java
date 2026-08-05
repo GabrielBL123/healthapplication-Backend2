@@ -1,12 +1,10 @@
 package com.gabrielbl.healthaplication.services;
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
-import com.gabrielbl.healthaplication.exception.BusinessException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.model.*;
 import com.gabrielbl.healthaplication.model.DTOs.*;
 import com.gabrielbl.healthaplication.repository.*;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,9 +39,14 @@ public class AvaliacaoMensalService {
     @Autowired
     private AvaliacaoTokenLinkRepository avaliacaoTokenLinkRepository;
 
+    @Autowired
+    private AutorizacaoService autorizacaoService;
+
     public void criarEIniciarAvaliacaoMensal(String cnpj) {
 
         Empresa empresa = empresaRepository.findByCnpj(cnpj);
+
+        autorizacaoService.verificarAcessoEmpresa(empresa);
 
         if(empresa==null) throw new NotFoundException("Empresa nao encontrada");
 
@@ -89,6 +90,8 @@ public class AvaliacaoMensalService {
 
     public void deletarAvaliacaoMensal(String id) {
 
+
+
         AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findById(UUID.fromString(id))
                 .orElseThrow(() -> new NotFoundException("Avaliacao nao encontrada"));
 
@@ -126,6 +129,9 @@ public class AvaliacaoMensalService {
         Empresa empresa = empresaRepository.findById(empresaId).orElseThrow(()
                 -> new NotFoundException("Empresa nao encontrada"));
 
+        autorizacaoService.verificarAcessoEmpresa(empresa);
+
+
         Page<AvaliacaoMensal> page =  avaliacaoMensalRepository.findByEmpresa(empresa,pageable);
 
         return page.map(a ->
@@ -141,6 +147,9 @@ public class AvaliacaoMensalService {
         if(empresa == null) {
             throw new NotFoundException("Empresa não encontrada");
         }
+
+        //verifica se possui acesso à empresa
+        autorizacaoService.verificarAcessoEmpresa(empresa);
 
         // 2. Buscar avaliação ativa
         AvaliacaoMensal avaliacaoMensal = avaliacaoMensalRepository
@@ -188,42 +197,19 @@ public class AvaliacaoMensalService {
         return novoToken;
     }
 
-    public AvaliacaoTokenLink validarToken(String token) {
-        return avaliacaoTokenLinkRepository
-                .findByTokenAndIsActive(token, true)
-                .filter(AvaliacaoTokenLink::isValid)
-                .orElseThrow(() -> new BusinessException("Token inválido ou expirado"));
-    }
 
-    private void competenciaVencida(String competencia) {
-
-        if (competencia == null || !competencia.matches("\\d{8}")) {
-            throw new IllegalArgumentException("competencia deve ser no formato YYYYMMDD");
-        }
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-        LocalDate dataCompetencia = LocalDate.parse(competencia, formatter);
-
-        if (dataCompetencia.isAfter(LocalDate.now())) throw new  IllegalArgumentException("data invalida");
-    }
 
     // --- BLOQUEIO DE SEGURANÇA NOS DETALHES ---
     public AvaliacaoMensalComSetoresResponseDTO getAvaliacao(String avaliacaoId) {
 
+        //pega a avaliacao
         AvaliacaoMensal avaliacao = avaliacaoMensalRepository.findById(UUID.fromString(avaliacaoId))
                 .orElseThrow(() -> new NotFoundException("Avaliacao nao encontrada"));
+        //verifica se possui acesso
+        autorizacaoService.verificarAcessoEmpresa(avaliacao.getEmpresa());
 
-        // Captura o usuário autenticado na requisição atual
-        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // Verifica se é RH. (Ajuste o getRole().name() conforme a sua estrutura de Cargo/Roles)
-        if (usuarioLogado.getRole().name().equals("RH") || usuarioLogado.getRole().name().equals("ROLE_RH")) {
-            // Impede que o RH acesse os detalhes de uma avaliação que possui um ID de empresa diferente da dele
-            if (!avaliacao.getEmpresa().getId().equals(usuarioLogado.getEmpresa().getId())) {
-                throw new BusinessException("Acesso Negado: Esta avaliação pertence a outra empresa.");
-            }
-        }
-
+        //organiza os dados para o retorno
         List<Usuario> funcionarios = avaliacao.getUsuarios();
 
         List<FuncionarioDTO> funcionariosDTO = funcionarios.stream()
@@ -259,4 +245,6 @@ public class AvaliacaoMensalService {
                 funcionariosDTO
         );
     }
+
+
 }

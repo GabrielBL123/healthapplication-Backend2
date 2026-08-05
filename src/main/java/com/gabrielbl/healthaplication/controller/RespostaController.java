@@ -49,6 +49,7 @@ public class RespostaController {
         return ResponseEntity.ok(new ResponseDTO<>("Resposta submetido com sucesso",null));
     }
 
+    //Deleta uma resposta caso esteja incompleta ou com erro
     @DeleteMapping("/responder/{token-id}")
     public ResponseEntity<ResponseDTO<?>> deleteResposta(@PathVariable("token-id") String tokenId){
 
@@ -60,6 +61,7 @@ public class RespostaController {
 
 
 
+    //Gera uma resposta para testes, ADMIN ONLY
     @PostMapping("/gerar-aleatorios")
     public ResponseEntity<ResponseDTO<?>> gerarRespostasAleatorias(
             @Validated @RequestBody GerarRespostasDTO data) {

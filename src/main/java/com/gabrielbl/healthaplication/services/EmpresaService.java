@@ -33,6 +33,9 @@ public class EmpresaService {
     @Autowired
     private AvaliacaoMensalRepository avaliacaoMensalRepository;
 
+    @Autowired
+    private AutorizacaoService autorizacaoService;
+
     public void criarEmpresa(RegistrarEmpresaDTO data) {
         if(empresaRepository.findByCnpj(data.cnpj())!=null) throw new AlreadySubmittedException("Cnpj ja registrado.");
 
@@ -59,6 +62,8 @@ public class EmpresaService {
     }
 
     public Page<EmpresaResponseDTO> getAllEmpresas(Pageable pageable) {
+
+
         Page<Empresa> page = empresaRepository.findAll(pageable);
 
         // ✨ Redirecionado para o nosso novo método de conversão 'toDTO'
@@ -97,4 +102,7 @@ public class EmpresaService {
                 listaSetores
         );
     }
+
+
+
 }

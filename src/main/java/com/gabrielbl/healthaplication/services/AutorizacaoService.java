@@ -2,6 +2,7 @@ package com.gabrielbl.healthaplication.services;
 
 
 import com.gabrielbl.healthaplication.exception.AlreadySubmittedException;
+import com.gabrielbl.healthaplication.exception.BusinessException;
 import com.gabrielbl.healthaplication.exception.NotFoundException;
 import com.gabrielbl.healthaplication.exception.UnauthorizedException;
 import com.gabrielbl.healthaplication.infra.security.TokenService;
@@ -21,12 +22,14 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -201,9 +204,11 @@ public class AutorizacaoService {
     @Transactional
     public TokensDTO atualizar(String refreshTokenRaw) {
 
+        String usuarioId = tokenService.validateRefreshToken(refreshTokenRaw);
+
         // 1. Verify JWT signature/expiration first
 
-        String usuarioId = tokenService.validateRefreshToken(refreshTokenRaw);
+
         if (usuarioId == null) {
             throw new UnauthorizedException("Refresh token inválido ou expirado");
         }
@@ -211,7 +216,9 @@ public class AutorizacaoService {
         // 2. Check it exists, isn't revoked, and hasn't expired in the DB
         String tokenHash = tokenService.hashToken(refreshTokenRaw);
         RefreshToken storedToken = refreshTokenRepository.findByTokenHash(tokenHash)
-                .orElseThrow(() -> new UnauthorizedException("Refresh token não reconhecido"));
+                .orElseThrow(() ->
+                    new UnauthorizedException("Refresh token não reconhecido")
+                );
 
         if (storedToken.isRevoked()) {
             throw new UnauthorizedException("Refresh token revogado");
@@ -246,5 +253,16 @@ public class AutorizacaoService {
         RefreshToken refreshToken = refreshTokenRepository.findByTokenHash(hash).orElseThrow();
 
         refreshTokenRepository.revokeAllByUsuarioId(refreshToken.getUsuario().getId());
+    }
+
+
+    public void verificarAcessoEmpresa(Empresa empresa) {
+
+        Usuario usuarioLogado = (Usuario) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        boolean isRH = usuarioLogado.getRole().name().equals("RH");
+        if (isRH && !empresa.getId().equals(usuarioLogado.getEmpresa().getId())) {
+            throw new BusinessException("Acesso Negado: Este recurso pertence a outra empresa.");
+        }
     }
 }

@@ -16,20 +16,22 @@ import java.util.UUID;
 public class AvaliacaoMensalController {
 
     private final AvaliacaoMensalService avaliacaoService;
-    private final RespostaService respostaService; // <-- ADICIONADO AQUI
+    private final RespostaService respostaService;
 
     // CONSTRUTOR ATUALIZADO
     public AvaliacaoMensalController(AvaliacaoMensalService avaliacaoService, RespostaService respostaService) {
         this.avaliacaoService = avaliacaoService;
-        this.respostaService = respostaService; // <-- INJETADO AQUI
+        this.respostaService = respostaService;
     }
 
+    //Admin only
     @GetMapping //Retorna todas as avaliacoes
     public ResponseEntity<ResponseDTO<Page<AvaliacaoMensalResponseDTO>>> getAllAvaliacoesMensal(Pageable pageable){
         Page<AvaliacaoMensalResponseDTO> avaliacoes = avaliacaoService.getAll(pageable);
         return ResponseEntity.ok(new ResponseDTO<>("Lista de todas as avaliacoes",avaliacoes));
     }
 
+    //Admin only
     @GetMapping("/{empresa-id}")  //Retorna todas as avaliacoes de determinada empresa(pelo seu ID)
     public ResponseEntity<ResponseDTO<Page<AvaliacaoMensalResponseDTO>>> getAllAvaliacoesMensaisInEmpresa(
             @PathVariable("empresa-id") UUID empresa_id,
@@ -38,7 +40,7 @@ public class AvaliacaoMensalController {
 
         return ResponseEntity.ok(new ResponseDTO<>("Lista de todas as avaliacoes da empresa",avaliacoes));
     }
-
+    //Admin and RH
     @GetMapping("/avaliacao/{avaliacaoId}") //Retorna As informaçoes de uma avaliacao, como id, competencia, funcionarios, Av.setores, entre outros.
     public ResponseEntity<ResponseDTO<AvaliacaoMensalComSetoresResponseDTO>> getAvaliacao(@PathVariable String avaliacaoId){
 
@@ -46,7 +48,8 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("",data));
     }
 
-    @PostMapping("/gerar-link") //POST pois recebe um JSON
+    //Both admin and RH
+    @PostMapping("/avaliacao/gerar-link") //POST pois recebe um JSON
     public ResponseEntity<ResponseDTO<?>> gerarLink(@Validated @RequestBody GerarLinkRequestDTO data) {
 
         // O seu service cria o token único no banco de dados e te devolve ele
@@ -57,6 +60,7 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("Link gerado com sucesso", linkFrontEnd));
     }
 
+    //Admin only
     @PostMapping("/iniciar") //Cria e inicia uma avaliacao
     public ResponseEntity<ResponseDTO<?>> iniciarAvaliacaoMensal(@Validated @RequestBody CnpjRequest cnpj) {
 
@@ -65,6 +69,7 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("Avaliacao Mensal de criada e iniciada",null));
     }
 
+    //Admin only
     @PostMapping("/finalizar")//Finaliza uma avaliacao
     public ResponseEntity<ResponseDTO<?>> finalizarAvaliacaoMensal(@Validated @RequestBody CnpjRequest cnpj) {
 
@@ -80,6 +85,7 @@ public class AvaliacaoMensalController {
         return ResponseEntity.ok(new ResponseDTO<>("Término da avaliação sinalizado com sucesso", null));
     }
 
+    //Admin only
     @GetMapping("/{avaliacaoId}/exportar-excel")
     public ResponseEntity<byte[]> exportarExcel(@PathVariable String avaliacaoId) {
 
@@ -93,6 +99,7 @@ public class AvaliacaoMensalController {
                 .body(excelBytes);
     }
 
+    //Admin only
     @DeleteMapping("/{id}")//Deleta uma avaliacao
     public ResponseEntity<ResponseDTO<?>> deletarAvaliacaoMensal(@PathVariable String id){
 

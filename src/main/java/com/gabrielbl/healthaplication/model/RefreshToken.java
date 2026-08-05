@@ -34,6 +34,11 @@ public class RefreshToken {
     private Instant expiresAt;
     private boolean revoked = false;
 
+    @Column
+    private String replacedByTokenHash;
+    @Column
+    private Instant revokedAt;
+
 
     public RefreshToken(String s, Usuario usuario, Instant expiresAt, boolean b) {
         this.tokenHash = s;
